@@ -1,0 +1,1 @@
+`npm install tailwindcss @tailwindcss/vite react-router axios zustand lucide-react react-hot-toast`

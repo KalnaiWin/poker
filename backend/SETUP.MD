@@ -1,0 +1,1 @@
+`npm i express mongoose jsonwebtoken bcryptjs dotenv cookie-parser nodemon -D resend @arcjet/node @arcjet/inspect cors`
