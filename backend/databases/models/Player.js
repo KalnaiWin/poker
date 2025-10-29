@@ -19,7 +19,7 @@ const playerSchema = new mongoose.Schema(
     },
     playerImg: {
       type: String,
-      default: "file:///D:/Full/Poker/Poker/avatar-anonymous.png",
+      default: "",
     },
     gender: {
       type: String,
@@ -29,8 +29,8 @@ const playerSchema = new mongoose.Schema(
         "croissant",
         "egg",
         "robot",
-        "other",
         "sandwich",
+        "plane",
         "anonymous",
       ],
       default: "anonymous",

@@ -1,9 +1,9 @@
 import jwt from "jsonwebtoken";
 import { ENV } from "./env.js";
 
-export const genrateToken = (userId, res) => {
+export const genrateToken = (playerId, res) => {
   // .sign( object , secretKey, option )
-  const token = jwt.sign({ userId }, ENV.JWT_SECRET, {
+  const token = jwt.sign({ playerId }, ENV.JWT_SECRET, {
     expiresIn: "7d", // seven days
   });
 
