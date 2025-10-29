@@ -1,6 +1,38 @@
+import { Route, Routes } from "react-router";
+import { useAuthStore } from "./stores/useAuthStore";
+import { useEffect } from "react";
+import { HomeLoader } from "./components/loaders/HomeLoader";
+import { Toaster } from "react-hot-toast";
+import { AuthLayout } from "./layouts/AuthLayout";
+import { SignUpPage } from "./pages/auth/SignUpPage";
+import { LoginPage } from "./pages/auth/LoginPage";
+import { StartGame } from "./pages/home/StartGame";
+import { CreateRoom } from "./pages/CreateRoom.jsx";
+import { JoinRoom } from "./pages/JoinRoom.jsx";
 
 const App = () => {
-  return <div>App</div>;
+  const { checkAuth, isCheckingAuth } = useAuthStore();
+
+  useEffect(() => {
+    checkAuth();
+  }, [checkAuth]);
+
+  if (isCheckingAuth) return <HomeLoader />;
+
+  return (
+    <div>
+      <Routes>
+        <Route path="/" element={<StartGame />} />
+        <Route path="/create" element={<CreateRoom />} />
+        <Route path="/join" element={<JoinRoom />} />
+        <Route element={<AuthLayout />}>
+          <Route path="/login" element={<LoginPage />} />
+          <Route path="/signup" element={<SignUpPage />} />
+        </Route>
+      </Routes>
+      <Toaster />
+    </div>
+  );
 };
 
 export default App;

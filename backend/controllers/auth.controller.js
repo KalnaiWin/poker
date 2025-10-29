@@ -88,9 +88,3 @@ export const LogOut = (_, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
   res.status(200).json({ message: "Logged out successfully." });
 };
-
-export const SelectImg = (req, res) => {
-  const { image } = req.body;
-  try {
-  } catch (error) {}
-};
