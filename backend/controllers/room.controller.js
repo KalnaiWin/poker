@@ -27,9 +27,13 @@ export const CreateRoom = async (req, res) => {
           .status(400)
           .json({ message: "Password should be at least 6 characters" });
       }
-
       hashedPassword = await bcrypt.hash(password, salt);
     }
+
+    if (totalContain > 10 || totalContain < 0)
+      return res
+        .status(400)
+        .json({ message: "Total should be from 2 to 10 players" });
 
     const newRoom = await Room.create({
       name,
@@ -37,7 +41,7 @@ export const CreateRoom = async (req, res) => {
       totalContain: totalContain || 2,
       isPrivate,
       creator: ownerRoom,
-      members: [ownerRoom],
+      members: [],
     });
 
     res.status(201).json({
@@ -81,7 +85,7 @@ export const DeleteRoom = async (req, res) => {
   }
 };
 
-export const GetAllRoom = async (req, res) => {
+export const GetAllRoom = async (_, res) => {
   try {
     const rooms = await Room.find()
       .populate("creator", "name")
