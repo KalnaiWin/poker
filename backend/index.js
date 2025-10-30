@@ -6,6 +6,7 @@ import cors from "cors";
 import { ENV } from "./config/env.js";
 import { connectDB } from "./databases/db.js";
 import authRoute from "./routes/auth.route.js";
+import roomRoute from "./routes/room.route.js";
 
 const app = express();
 
@@ -18,6 +19,7 @@ app.use(cors({ origin: ENV.CLIENT_URL, credentials: true }));
 app.use(cookieParser());
 
 app.use("/api/auth", authRoute);
+app.use("/api/room", roomRoute);
 
 app.use("/avatars", express.static("public/avatar"));
 
