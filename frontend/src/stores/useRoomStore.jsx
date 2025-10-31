@@ -53,10 +53,33 @@ export const useRoomStore = create((set) => ({
     }
   },
 
-  joinRoom: async (data) => {
+  joinRoom: async (password, roomId) => {
+    set({ isPendingFunction: true });
     try {
+      await axiosInstance.post(`/room/join/${roomId}`, {
+        password,
+      });
+      toast.success("Joined room successfully");
+      return 1;
     } catch (error) {
+      console.error("Error in joining room:", error);
+      toast.error(error.response?.data?.message || "Join failed");
+      return 0;
     } finally {
+      set({ isPendingFunction: false });
+    }
+  },
+
+  leaveRoom: async (roomId) => {
+    set({ isPendingFunction: true });
+    try {
+      await axiosInstance.post(`/room/leave/${roomId}`);
+      toast.success("Left room successfully");
+    } catch (error) {
+      console.error("Error in leaving room:", error);
+      toast.error(error.response?.data?.message || "Leave failed");
+    } finally {
+      set({ isPendingFunction: false });
     }
   },
 }));

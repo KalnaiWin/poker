@@ -1,6 +1,7 @@
 import {
   ArrowLeft,
   Box,
+  CircleMinus,
   CirclePlus,
   Loader,
   LockKeyhole,
@@ -37,6 +38,12 @@ export const CreateRoom = () => {
   const handleSubmit = (e) => {
     e.preventDefault();
     createRoom(formData);
+    setFormData({
+      name: "",
+      totalContain: 2,
+      isPrivate: false,
+      password: "",
+    });
   };
 
   const roomList = Array.isArray(room) ? room : room?.rooms || [];
@@ -155,13 +162,19 @@ export const CreateRoom = () => {
                 </button>
               )
             ) : (
-              <div>You have reached the max of total rooms</div>
+              <p className="text-red-500 flex items-center gap-2">
+                <CircleMinus />
+                You have reached the max of total rooms
+              </p>
             )}
           </div>
         </form>
         <div className="flex gap-2 w-2/3 justify-start">
           {playerRooms.map((r, index) => (
-            <div key={index || r._id} className="bg-white px-5 py-2 rounded-md">
+            <div
+              key={index || r._id}
+              className="bg-white px-5 py-2 rounded-md text-sm"
+            >
               <div className="flex gap-2">
                 <p className="font-bold line-clamp-1 max-w-2xl">{r.name}</p>
                 <p>
@@ -173,8 +186,8 @@ export const CreateRoom = () => {
                 </p>
               </div>
               <span className="flex gap-2 justify-center mb-3">
-                Max player: <User2 />{" "}
-                <p className="text-green-600 font-black">{r.totalContain}</p>
+                Max player: <User2 className={`${r.isPrivate ? "text-red-500" : "text-green-500"}`} />
+                <p className="font-black">{r.totalContain}</p>
               </span>
               {isDeletingRoom ? (
                 <button
