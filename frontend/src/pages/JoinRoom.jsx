@@ -12,7 +12,7 @@ import { Link, Navigate } from "react-router";
 import { useAuthStore } from "../stores/useAuthStore";
 
 export const JoinRoom = () => {
-  const { getAllRoom, isLoadingRoom, room } = useRoomStore();
+  const { getAllRoom, isLoadingRoom, room, joinRoom } = useRoomStore();
   const { authPlayer } = useAuthStore();
 
   if (!authPlayer) {
@@ -25,19 +25,20 @@ export const JoinRoom = () => {
 
   const [isToggle, setIsToggle] = useState(false);
 
-  const playerRooms = room?.filter((r) => r.creator !== authPlayer?._id);
-
+  const playerRooms = room?.filter(
+    (r) => r.creator._id?.toString() === authPlayer?._id?.toString()
+  );
   if (isLoadingRoom) return <p>Loading rooms...</p>;
 
   return (
-    <div className="bg-yellow-950 w-full h-screen text-white">
+    <div className="bg-yellow-950 w-full min-h-screen text-white">
       <button className="bg-white px-4 py-2 rounded-md absolute top-5 left-5 cursor-pointer hover:opacity-80">
         <Link className="flex font-black text-black" to={"/"}>
           <ArrowLeft /> Back
         </Link>
       </button>
       <h1 className="text-center font-bold text-4xl pt-10">Join Room</h1>
-      <div className="flex flex-col justify-center items-center my-10 gap-5">
+      <div className="flex flex-col justify-center items-center py-10 gap-5">
         <div className="relative w-2/3 flex justify-center">
           <input
             type="text"
@@ -111,8 +112,17 @@ export const JoinRoom = () => {
                           </p>
                         </div>
                       </div>
-                      <button className="bg-blue-600 text-white px-4 py-1 rounded-md">
-                        Join
+                      <button className="bg-blue-600 text-white px-4 py-1 rounded-md hover:opacity-80 cursor-pointer">
+                        {r.isPrivate ? (
+                          <Link to={`/join/${r._id}`}>Join</Link>
+                        ) : (
+                          <Link
+                            to={`/join/${r._id}`}
+                            onClick={() => joinRoom("", r._id)}
+                          >
+                            Join
+                          </Link>
+                        )}
                       </button>
                     </div>
                   </div>
@@ -125,8 +135,80 @@ export const JoinRoom = () => {
             </div>
           )}
         </div>
+        <div className="flex w-2/3 bg-white hover:bg-white/90 rounded-md items-center px-5">
+          <p className="text-xl font-black text-black p-2">Other{"'s "}room</p>
+        </div>
         {/* All rooms */}
-        <div></div>
+        <div className="grid grid-cols-3 gap-5 w-full px-10">
+          {room?.length > 0 ? (
+            room.map((r, index) => (
+              <div
+                key={r._id || index}
+                className="bg-yellow-800 text-white rounded-md px-3 py-2 flex flex-col gap-2"
+              >
+                <div className="flex justify-between">
+                  <p className="font-bold text-lg">
+                    {r.name}
+                    <span className="text-sm opacity-80 font-normal">
+                      {" Created by - "}
+                      {r.creator.name}
+                    </span>
+                  </p>
+                  {r.isPrivate ? (
+                    <div className="flex items-center gap-2 font-medium">
+                      <LockKeyhole className="text-red-500" />
+                      <p>Private</p>
+                    </div>
+                  ) : (
+                    <div className="flex  items-center gap-2 font-medium">
+                      <LockKeyholeOpen className="text-green-500" />
+                      <p>Public</p>
+                    </div>
+                  )}
+                </div>
+                <div className="w-full justify-between flex">
+                  <div className="flex gap-2">
+                    <div className="flex gap-2">
+                      <User2
+                        className={`${
+                          r.members.length > 0
+                            ? "text-green-300"
+                            : "text-blue-300"
+                        }`}
+                      />
+                      <p>
+                        {r.members?.length}
+                        {"/"}
+                        {r.totalContain}
+                      </p>
+                    </div>
+                    <div className="grid grid-cols-5">
+                      {r.members.map((mem, index) => (
+                        <div key={index || mem._id}>
+                          <p className="font-bold underline">{mem.name}</p>
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  <button className="bg-blue-600 text-white px-4 py-1 rounded-md hover:opacity-80 cursor-pointer">
+                    {r.isPrivate ? (
+                      <Link to={`/join/${r._id}`}>Join</Link>
+                    ) : (
+                      <Link
+                        to={`/join/${r._id}`}
+                        onClick={() => joinRoom("", r._id)}
+                      >
+                        Join
+                      </Link>
+                    )}
+                  </button>
+                </div>
+              </div>
+            ))
+          ) : (
+            <p className="text-center text-gray-300">No rooms created yet.</p>
+          )}
+        </div>
       </div>
     </div>
   );

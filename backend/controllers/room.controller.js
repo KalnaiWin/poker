@@ -89,6 +89,7 @@ export const GetAllRoom = async (_, res) => {
   try {
     const rooms = await Room.find()
       .populate("creator", "name")
+      .populate("members", "name")
       .sort({ createdAt: -1 });
 
     return res.json(rooms);
@@ -128,5 +129,40 @@ export const JoinRoom = async (req, res) => {
   } catch (error) {
     console.error("JoinRoom Error:", error);
     res.status(500).json({ message: "Failed to join room" });
+  }
+};
+
+export const LeaveRoom = async (req, res) => {
+  const { roomId } = req.params;
+  const playerId = req.player._id;
+
+  try {
+    const room = await Room.findById(roomId);
+    if (!room)
+      return res.status(404).json({ message: "This room is not exist" });
+
+    if (!room.members.includes(playerId)) {
+      return res
+        .status(400)
+        .json({ message: "You are not a member of this room" });
+    }
+
+    room.members = room.members.filter(
+      (member) => member.toString() !== playerId.toString()
+    );
+
+    // if (room.creator.toString() === playerId.toString()) {
+    //   await room.deleteOne();
+    //   return res.json({ message: "You were the creator, room deleted" });
+    // }
+
+    await room.save();
+    res.json({
+      // message: "Left room successfully",
+      room,
+    });
+  } catch (error) {
+    console.error("LeaveRoom Error:", error);
+    res.status(500).json({ message: "Failed to leave room" });
   }
 };
