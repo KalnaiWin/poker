@@ -1,6 +1,7 @@
 import bcrypt from "bcryptjs";
 import Room from "../databases/models/Room.js";
 import Message from "../databases/models/Message.js";
+import Player from "../databases/models/Player.js";
 
 export const CreateRoom = async (req, res) => {
   const { name, totalContain, isPrivate, password } = req.body;
@@ -89,7 +90,7 @@ export const GetAllRoom = async (_, res) => {
   try {
     const rooms = await Room.find()
       .populate("creator", "name")
-      .populate("members", "name")
+      .populate("members", "_id name playerImg win lose")
       .sort({ createdAt: -1 });
 
     return res.json(rooms);
@@ -164,5 +165,51 @@ export const LeaveRoom = async (req, res) => {
   } catch (error) {
     console.error("LeaveRoom Error:", error);
     res.status(500).json({ message: "Failed to leave room" });
+  }
+};
+
+export const KickPlayer = async (req, res) => {
+  const { playerId } = req.body;
+  const { roomId } = req.params;
+  const ownerRoom = req.player._id;
+
+  try {
+    if (!playerId) {
+      return res.status(400).json({ message: "Player ID is required" });
+    }
+
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+
+    if (room.creator.toString() !== ownerRoom.toString()) {
+      return res
+        .status(403)
+        .json({ message: "Only the room creator can kick players" });
+    }
+
+    if (playerId === ownerRoom.toString()) {
+      return res.status(400).json({ message: "You cannot kick yourself" });
+    }
+    const isMember = room.members.some(
+      (memberId) => memberId.toString() === playerId
+    );
+    if (!isMember)
+      return res.status(400).json({ message: "Player is not in this room" });
+
+    room.members = room.members.filter(
+      (memberId) => memberId.toString() !== playerId
+    );
+
+    await room.save();
+
+    res.json({
+      message: "Player kicked successfully",
+      room,
+    });
+  } catch (error) {
+    console.error("KickPlayer Error:", error);
+    res.status(500).json({ message: "Failed to kick player" });
   }
 };
