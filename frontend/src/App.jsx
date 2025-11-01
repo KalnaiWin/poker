@@ -10,6 +10,7 @@ import { StartGame } from "./pages/home/StartGame";
 import { CreateRoom } from "./pages/CreateRoom.jsx";
 import { JoinRoom } from "./pages/JoinRoom.jsx";
 import { EnterRoomForm } from "./pages/EnterRoomForm.jsx";
+import { CheckPassword } from "./pages/CheckPassword.jsx";
 
 const App = () => {
   const { checkAuth, isCheckingAuth } = useAuthStore();
@@ -26,6 +27,7 @@ const App = () => {
         <Route path="/" element={<StartGame />} />
         <Route path="/create" element={<CreateRoom />} />
         <Route path="/join" element={<JoinRoom />} />
+        <Route path="/join/:roomId/password" element={<CheckPassword />} />
         <Route path="/join/:roomId" element={<EnterRoomForm />} />
         <Route element={<AuthLayout />}>
           <Route path="/login" element={<LoginPage />} />
