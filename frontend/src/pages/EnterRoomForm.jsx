@@ -1,8 +1,9 @@
 import { Link, useNavigate, useParams } from "react-router";
 import { useRoomStore } from "../stores/useRoomStore";
 import { useEffect, useState } from "react";
-import { ArrowLeft, Eye, EyeClosed, Loader2, Lock } from "lucide-react";
+import { ArrowLeft, Eye, EyeClosed, Loader2, Lock, LogOut } from "lucide-react";
 import { useAuthStore } from "../stores/useAuthStore";
+import { RoomDesign } from "../components/RoomDesign";
 
 export const EnterRoomForm = () => {
   const { room, getAllRoom, isPendingFunction, joinRoom, leaveRoom } =
@@ -15,7 +16,6 @@ export const EnterRoomForm = () => {
 
   const [password, setPassword] = useState("");
   const [open, setOpen] = useState(false);
-  const [authentication, setAuthentication] = useState(false);
 
   useEffect(() => {
     getAllRoom();
@@ -25,6 +25,10 @@ export const EnterRoomForm = () => {
 
   if (!thisRoom) return <p>Loading room...</p>;
 
+  const isPlayerMember = thisRoom.members?.some(
+    (memberId) => memberId.toString() === authPlayer?._id?.toString()
+  );
+
   const handleSubmit = async (e) => {
     e.preventDefault();
 
@@ -32,15 +36,11 @@ export const EnterRoomForm = () => {
 
     if (isAuthenticated) {
       console.log("Joined room!");
-      setAuthentication(true);
+      getAllRoom();
     }
   };
 
-  const isPlayerMember = thisRoom.members?.some(
-    (memberId) => memberId.toString() === authPlayer?._id?.toString()
-  );
-
-  if (thisRoom.isPrivate && !authentication && !isPlayerMember) {
+  if (thisRoom.isPrivate && !isPlayerMember) {
     return (
       <div className="relative w-full h-screen">
         <button className="bg-black px-4 py-2 rounded-md absolute top-5 left-5 cursor-pointer hover:opacity-80">
@@ -103,17 +103,16 @@ export const EnterRoomForm = () => {
   }
 
   return (
-    <div>
-      <h2>Room: {thisRoom.name}</h2>
-      <p>Total Players: {thisRoom.totalContain}</p>
-      <p>Private: {thisRoom.isPrivate ? "Yes" : "No"}</p>
+    <div className="bg-green-900 w-full h-screen relative flex justify-center items-center">
+      <RoomDesign thisRoom={thisRoom} />
       <button
         onClick={() => {
           leaveRoom(roomId);
           navigate("/join");
         }}
-        className="text-red-500"
+        className="text-white absolute top-[50%] rotate-90 -right-10 bg-red-600 px-5 py-1 rounded-md flex items-center gap-2 hover:opacity-80 cursor-pointer"
       >
+        <LogOut />
         Leave
       </button>
     </div>

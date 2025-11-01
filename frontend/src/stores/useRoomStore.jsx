@@ -82,4 +82,22 @@ export const useRoomStore = create((set) => ({
       set({ isPendingFunction: false });
     }
   },
+
+  kickPlayer: async (playerId, roomId) => {
+    set({ isPendingFunction: true });
+    try {
+      await axiosInstance.post(`/room/kick/${roomId}`, {
+        playerId,
+      });
+      toast.success("Player kicked successfully");
+      const res = await axiosInstance.get("/room");
+      set({ room: res.data });
+    } catch (error) {
+      console.error("Error kicking player:", error);
+      toast.error(error.response?.data?.message || "Failed to kick player");
+    } finally {
+      set({ isPendingFunction: false });
+    }
+  },
+
 }));

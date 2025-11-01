@@ -6,6 +6,7 @@ import {
   DeleteRoom,
   GetAllRoom,
   JoinRoom,
+  KickPlayer,
   LeaveRoom,
 } from "../controllers/room.controller.js";
 
@@ -18,5 +19,6 @@ router.delete("/delete/:roomId", DeleteRoom);
 router.get("/", GetAllRoom);
 router.post("/join/:roomId", JoinRoom);
 router.post("/leave/:roomId", LeaveRoom);
+router.post("/kick/:roomId", KickPlayer);
 
 export default router;

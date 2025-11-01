@@ -7,6 +7,7 @@ import { ENV } from "./config/env.js";
 import { connectDB } from "./databases/db.js";
 import authRoute from "./routes/auth.route.js";
 import roomRoute from "./routes/room.route.js";
+import messageRoute from "./routes/message.route.js";
 
 const app = express();
 
@@ -20,6 +21,7 @@ app.use(cookieParser());
 
 app.use("/api/auth", authRoute);
 app.use("/api/room", roomRoute);
+app.use("/api/message", messageRoute);
 
 app.use("/avatars", express.static("public/avatar"));
 
