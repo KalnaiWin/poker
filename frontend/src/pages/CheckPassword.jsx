@@ -45,7 +45,6 @@ export const CheckPassword = () => {
     if (isAuthenticated) {
       console.log("Joined room!");
       await getAllRoom();
-      // ✅ Navigate to the room page after successful password
       navigate(`/join/${roomId}`, { replace: true });
     }
   };

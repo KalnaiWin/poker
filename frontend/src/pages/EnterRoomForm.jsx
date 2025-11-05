@@ -35,7 +35,7 @@ export const EnterRoomForm = () => {
   );
 
   if (!isPlayerMember && thisRoom.isPrivate) {
-    return null; 
+    return null;
   }
 
   return (
