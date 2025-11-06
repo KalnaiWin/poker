@@ -18,8 +18,14 @@ export const GetAllMessage = async (req, res) => {
 };
 
 export const SendMessage = async (req, res) => {
-  const { roomId, senderId, text } = req.body;
+  const { roomId } = req.params;
+  const senderId = req?.player?._id;
+  const { text } = req.body;
   try {
+    if (!text || !text.trim()) {
+      return;
+    }
+
     const room = await Room.findById(roomId);
     const player = await Player.findById(senderId);
     if (!player || !room)
@@ -45,7 +51,8 @@ export const SendMessage = async (req, res) => {
 };
 
 export const ReplyMessage = async (req, res) => {
-  const { roomId, senderId, text, replyTo } = req.body;
+  const { roomId } = req.params;
+  const { senderId, text, replyTo } = req.body;
   try {
     const room = await Room.findById(roomId);
     const player = await Player.findById(senderId);

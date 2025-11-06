@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link } from "react-router";
-import { useAuthStore } from "../../stores/useAuthStore";
 import { Loader2, Lock, Mail, Send } from "lucide-react";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 export const LoginPage = () => {
   const { isAuthLoading, login } = useAuthStore();

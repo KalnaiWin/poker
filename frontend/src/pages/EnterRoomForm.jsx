@@ -2,8 +2,8 @@ import { useNavigate, useParams } from "react-router";
 import { useRoomStore } from "../stores/useRoomStore";
 import { useEffect } from "react";
 import { LogOut } from "lucide-react";
-import { useAuthStore } from "../stores/useAuthStore";
 import { RoomDesign } from "../components/RoomDesign";
+import { useAuthStore } from "../stores/useAuthStore";
 
 export const EnterRoomForm = () => {
   const { room, getAllRoom, leaveRoom } = useRoomStore();

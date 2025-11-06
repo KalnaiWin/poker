@@ -186,7 +186,12 @@ export const CreateRoom = () => {
                 </p>
               </div>
               <span className="flex gap-2 justify-center mb-3">
-                Max player: <User2 className={`${r.isPrivate ? "text-red-500" : "text-green-500"}`} />
+                Max player:{" "}
+                <User2
+                  className={`${
+                    r.isPrivate ? "text-red-500" : "text-green-500"
+                  }`}
+                />
                 <p className="font-black">{r.totalContain}</p>
               </span>
               {isDeletingRoom ? (

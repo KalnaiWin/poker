@@ -1,5 +1,4 @@
 import { Route, Routes } from "react-router";
-import { useAuthStore } from "./stores/useAuthStore";
 import { useEffect } from "react";
 import { HomeLoader } from "./components/loaders/HomeLoader";
 import { Toaster } from "react-hot-toast";
@@ -11,6 +10,7 @@ import { CreateRoom } from "./pages/CreateRoom.jsx";
 import { JoinRoom } from "./pages/JoinRoom.jsx";
 import { EnterRoomForm } from "./pages/EnterRoomForm.jsx";
 import { CheckPassword } from "./pages/CheckPassword.jsx";
+import { useAuthStore } from "./stores/useAuthStore.js";
 
 const App = () => {
   const { checkAuth, isCheckingAuth } = useAuthStore();
