@@ -12,7 +12,7 @@ const router = express.Router();
 router.use(arcjetProtection, protectedRoute);
 
 router.get("/:roomId", GetAllMessage);
-router.post("/", SendMessage);
-router.post("/reply", ReplyMessage);
+router.post("/:roomId/send", SendMessage);
+router.post("/:roomId/reply", ReplyMessage);
 
 export default router;

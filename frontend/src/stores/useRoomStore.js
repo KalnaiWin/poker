@@ -1,8 +1,10 @@
 import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
+import { useMessageStore } from "./useChatStore";
+import { useAuthStore } from "./useAuthStore";
 
-export const useRoomStore = create((set) => ({
+export const useRoomStore = create((set, get) => ({
   room: null,
   isLoadingRoom: false,
   isPendingFunction: false,
@@ -15,6 +17,7 @@ export const useRoomStore = create((set) => ({
       set({ room: res.data });
     } catch (error) {
       console.error("Error in room", error);
+      toast.error(error?.response?.data?.message || "Failed to load rooms");
       set({ room: null });
     } finally {
       set({ isLoadingRoom: false });
@@ -30,15 +33,14 @@ export const useRoomStore = create((set) => ({
       set({ room: res.data });
     } catch (error) {
       console.error("Error in creating room", error);
-      toast.error(error.response.data.message || "Create failed");
-      set({ room: null });
+      toast.error(error?.response?.data?.message || "Create failed");
     } finally {
       set({ isPendingFunction: false });
     }
   },
 
   deleteRoom: async (roomId) => {
-    set({ isDeleting: true });
+    set({ isDeletingRoom: true });
     try {
       await axiosInstance.delete(`/room/delete/${roomId}`);
       set((state) => ({
@@ -47,23 +49,26 @@ export const useRoomStore = create((set) => ({
       toast.success("Deleted successfully");
     } catch (error) {
       console.error("Error in deleting room:", error);
-      toast.error(error.response?.data?.message || "Delete failed");
+      toast.error(error?.response?.data?.message || "Delete failed");
     } finally {
-      set({ isDeleting: false });
+      set({ isDeletingRoom: false });
     }
   },
 
   joinRoom: async (password, roomId) => {
     set({ isPendingFunction: true });
+    const { authPlayer, socket } = useAuthStore.getState();
     try {
-      await axiosInstance.post(`/room/join/${roomId}`, {
-        password,
-      });
+      await axiosInstance.post(`/room/join/${roomId}`, { password });
+      if (socket && authPlayer?._id) {
+        socket.emit("join_room", { roomId, playerId: authPlayer._id });
+        console.log(`${authPlayer.name} joined the room`);
+      }
       toast.success("Joined room successfully");
       return 1;
     } catch (error) {
       console.error("Error in joining room:", error);
-      toast.error(error.response?.data?.message || "Join failed");
+      toast.error(error?.response?.data?.message || "Join failed");
       return 0;
     } finally {
       set({ isPendingFunction: false });
@@ -72,12 +77,19 @@ export const useRoomStore = create((set) => ({
 
   leaveRoom: async (roomId) => {
     set({ isPendingFunction: true });
+    const { clearMessages } = useMessageStore.getState();
+    const { authPlayer, socket } = useAuthStore.getState();
     try {
       await axiosInstance.post(`/room/leave/${roomId}`);
+
+      if (socket && authPlayer?._id) {
+        socket.emit("leave_room", { roomId, playerId: authPlayer._id });
+      }
+      clearMessages(roomId);
       toast.success("Left room successfully");
     } catch (error) {
       console.error("Error in leaving room:", error);
-      toast.error(error.response?.data?.message || "Leave failed");
+      toast.error(error?.response?.data?.message || "Leave failed");
     } finally {
       set({ isPendingFunction: false });
     }
@@ -85,19 +97,23 @@ export const useRoomStore = create((set) => ({
 
   kickPlayer: async (playerId, roomId) => {
     set({ isPendingFunction: true });
+    const { socket } = useAuthStore.getState();
     try {
-      await axiosInstance.post(`/room/kick/${roomId}`, {
-        playerId,
-      });
+      await axiosInstance.post(`/room/kick/${roomId}`, { playerId });
+
+      if (socket) {
+        socket.emit("kick_player", { roomId, playerId });
+      }
+
       toast.success("Player kicked successfully");
+
       const res = await axiosInstance.get("/room");
       set({ room: res.data });
     } catch (error) {
       console.error("Error kicking player:", error);
-      toast.error(error.response?.data?.message || "Failed to kick player");
+      toast.error(error?.response?.data?.message || "Failed to kick player");
     } finally {
       set({ isPendingFunction: false });
     }
   },
-
 }));

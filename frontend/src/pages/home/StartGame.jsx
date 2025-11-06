@@ -1,7 +1,7 @@
 import { Link } from "react-router";
-import { useAuthStore } from "../../stores/useAuthStore";
 import { GenderIcon } from "../../databases/utils";
 import { LogOut } from "lucide-react";
+import { useAuthStore } from "../../stores/useAuthStore";
 
 export const StartGame = () => {
   const { authPlayer, logout } = useAuthStore();
