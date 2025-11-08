@@ -93,3 +93,24 @@ export const ReplyMessage = async (req, res) => {
     res.status(500).json({ message: "Failed to reply to message" });
   }
 };
+
+export const ResetMessages = async (req, res) => {
+  const { roomId } = req.params;
+  try {
+    const room = await Room.findById(roomId);
+    if (!room) {
+      return res.status(404).json({ message: "Room not found" });
+    }
+    if (room.members.length === 0) {
+      await Message.deleteMany({ room: roomId });
+      return res.status(200).json({ message: "All messages deleted" });
+    } else {
+      return res
+        .status(200)
+        .json({ message: "Room still has members, no reset" });
+    }
+  } catch (error) {
+    console.error("ResetMessages Error:", error);
+    res.status(500).json({ message: "Failed to reset messages" });
+  }
+};

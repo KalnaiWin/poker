@@ -19,9 +19,27 @@ export const ChatPage = ({ thisRoom }) => {
   // Load historical messages when room changes
   useEffect(() => {
     if (thisRoom?._id) {
-      getMessage(thisRoom._id);
-    }
+      getMessage(thisRoom._id).then(() => {
+        connectSocket();
+      });
+    } else return;
   }, [thisRoom?._id, getMessage]);
+
+  useEffect(() => {
+    const { socket } = useAuthStore.getState();
+    if (!socket) return;
+
+    const handleSystemMessage = (msg) => {
+      console.log("Received system message:", msg);
+      useMessageStore.getState().addSystemMessage(msg);
+    };
+
+    socket.on("system_message", handleSystemMessage);
+
+    return () => {
+      socket.off("system_message", handleSystemMessage);
+    };
+  }, []);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -65,17 +83,28 @@ export const ChatPage = ({ thisRoom }) => {
             </div>
           </div>
         ) : (
-          messages.map((msg) => {
-            return (
-              <div key={msg._id} className="flex justify-start items-center">
-                <div className="flex items-center gap-2 text-gray-300 text-xs">
-                  <span className="text-gray-400 font-medium">
-                    {msg.sender?.name}:
-                  </span>
-                  <span className="text-gray-200">{msg.text}</span>
+          messages.map((msg, idx) => {
+            if (msg.isSystem || msg.system) {
+              return (
+                <div
+                  key={idx}
+                  className="w-full flex justify-center text-gray-500 italic py-1"
+                >
+                  {msg.text}
                 </div>
-              </div>
-            );
+              );
+            } else {
+              return (
+                <div key={idx} className="flex justify-start items-center">
+                  <div className="flex items-center gap-2 text-gray-300 text-xs">
+                    <span className="text-gray-400 font-medium">
+                      {msg.sender?.name}:
+                    </span>
+                    <span className="text-gray-200">{msg.text}</span>
+                  </div>
+                </div>
+              );
+            }
           })
         )}
         <div />

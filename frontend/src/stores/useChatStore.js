@@ -25,21 +25,18 @@ export const useMessageStore = create((set, get) => ({
   sendMessage: async (text, roomId) => {
     const { authPlayer, socket } = useAuthStore.getState();
     if (!text.trim() || !socket) return;
-
     const tempMessage = {
       _id: `temp-${Date.now()}`,
       sender: { _id: authPlayer._id, name: authPlayer.name },
       text,
       createdAt: new Date().toISOString(),
     };
-
     set((state) => ({ messages: [...state.messages, tempMessage] }));
 
     set({ isSending: true });
     try {
       const res = await axiosInstance.post(`/message/${roomId}/send`, { text });
-      socket.emit("send_message", { ...res.data, roomId });
-
+      socket.emit("send_message", { message: res.data, roomId });
       set((state) => ({
         messages: state.messages.map((m) =>
           m._id === tempMessage._id ? res.data : m
@@ -70,6 +67,12 @@ export const useMessageStore = create((set, get) => ({
   },
 
   clearMessages: () => {
-    set({ messages: [], players: [] });
+    set({ messages: [] });
+  },
+
+  addIncomingMessage: (message) => {
+    set((state) => ({
+      messages: [...state.messages, message],
+    }));
   },
 }));

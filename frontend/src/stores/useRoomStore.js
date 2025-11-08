@@ -62,7 +62,7 @@ export const useRoomStore = create((set, get) => ({
       await axiosInstance.post(`/room/join/${roomId}`, { password });
       if (socket && authPlayer?._id) {
         socket.emit("join_room", { roomId, playerId: authPlayer._id });
-        console.log(`${authPlayer.name} joined the room`);
+        useMessageStore.getState().sendMessage(" joined the room", roomId);
       }
       toast.success("Joined room successfully");
       return 1;
@@ -77,15 +77,14 @@ export const useRoomStore = create((set, get) => ({
 
   leaveRoom: async (roomId) => {
     set({ isPendingFunction: true });
-    const { clearMessages } = useMessageStore.getState();
     const { authPlayer, socket } = useAuthStore.getState();
     try {
       await axiosInstance.post(`/room/leave/${roomId}`);
-
+      await axiosInstance.delete(`/message/${roomId}/reset`);
       if (socket && authPlayer?._id) {
         socket.emit("leave_room", { roomId, playerId: authPlayer._id });
+        useMessageStore.getState().sendMessage(" left the room", roomId);
       }
-      clearMessages(roomId);
       toast.success("Left room successfully");
     } catch (error) {
       console.error("Error in leaving room:", error);

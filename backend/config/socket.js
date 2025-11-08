@@ -3,6 +3,7 @@ import http from "http";
 import express from "express";
 import { ENV } from "./env.js";
 import { socketAuthMiddleware } from "../middlewares/socket.auth.middlewsre.js";
+import Player from "../databases/models/Player.js";
 
 //  create a server including rest api and socket server
 const app = express();
@@ -40,6 +41,26 @@ io.on("connection", (socket) => {
     console.log("A player disconnected", socket.player.name);
     delete playerSocketMap[playerId];
     io.emit("getOnlineplayers", Object.keys(playerSocketMap));
+  });
+
+  socket.on("join_room", async ({ roomId, playerId }) => {
+    socket.join(roomId);
+    console.log(`${socket.player.name} joined room ${roomId}`);
+  });
+
+  socket.on("leave_room", ({ roomId }) => {
+    socket.leave(roomId);
+    console.log(`${socket.player.name} left room ${roomId}`);
+    io.to(roomId).emit("user_left", { name: socket.player.name });
+  });
+
+  socket.on("kick_player", ({ roomId, playerId }) => {
+    console.log("Kick request received:", roomId, playerId);
+  });
+
+  socket.on("send_message", ({ message, roomId }) => {
+    // console.log("Message received:", message, "Room:", roomId);
+    io.to(roomId).emit("receive_message", { message, roomId });
   });
 });
 
