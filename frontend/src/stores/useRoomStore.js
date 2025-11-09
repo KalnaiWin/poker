@@ -61,10 +61,14 @@ export const useRoomStore = create((set, get) => ({
     try {
       await axiosInstance.post(`/room/join/${roomId}`, { password });
       if (socket && authPlayer?._id) {
-        socket.emit("join_room", { roomId, playerId: authPlayer._id });
+        socket.emit("join_room", {
+          roomId,
+          playerId: authPlayer._id,
+          playerName: authPlayer.name,
+        });
         useMessageStore.getState().sendMessage(" joined the room", roomId);
       }
-      toast.success("Joined room successfully");
+      // toast.success("Joined room successfully");
       return 1;
     } catch (error) {
       console.error("Error in joining room:", error);
@@ -80,12 +84,12 @@ export const useRoomStore = create((set, get) => ({
     const { authPlayer, socket } = useAuthStore.getState();
     try {
       await axiosInstance.post(`/room/leave/${roomId}`);
-      await axiosInstance.delete(`/message/${roomId}/reset`);
       if (socket && authPlayer?._id) {
         socket.emit("leave_room", { roomId, playerId: authPlayer._id });
         useMessageStore.getState().sendMessage(" left the room", roomId);
       }
-      toast.success("Left room successfully");
+      await axiosInstance.delete(`/message/${roomId}/reset`);
+      // toast.success("Left room successfully");
     } catch (error) {
       console.error("Error in leaving room:", error);
       toast.error(error?.response?.data?.message || "Leave failed");
