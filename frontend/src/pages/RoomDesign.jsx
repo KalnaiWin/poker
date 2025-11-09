@@ -3,6 +3,7 @@ import { useEffect, useState } from "react";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useRoomStore } from "../stores/useRoomStore";
 import { ChatPage } from "../pages/ChatPage";
+import { GameRoom } from "../pages/GameRoom";
 
 export const RoomDesign = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
@@ -18,7 +19,7 @@ export const RoomDesign = ({ thisRoom }) => {
   return (
     <div className="w-full h-screen flex flex-col justify-center items-center text-white relative">
       {/* Tab Menu */}
-      <div className="absolute top-5 right-5 flex flex-col gap-4">
+      <div className="absolute top-5 right-5 flex flex-col gap-4 z-20">
         <div className="flex gap-2 top-5 right-5 justify-end">
           <Menu
             className="size-8"
@@ -107,30 +108,8 @@ export const RoomDesign = ({ thisRoom }) => {
           />
         </div>
       </div>
-
-      <div className="w-[10%]">
-        <img
-          src="/images/table.png"
-          alt="Table"
-          className="object-cover rounded-md"
-        />
-      </div>
-      <div className="text-center">
-        <h2>Room: {thisRoom.name}</h2>
-        <p>Total Players: {thisRoom.totalContain}</p>
-        <p>Private: {thisRoom.isPrivate ? "Yes" : "No"}</p>
-      </div>
-      <div className="grid grid-cols-10 gap-2 absolute bottom-10 w-full px-10">
-        {thisRoom.members.map((member, index) => (
-          <div className="flex gap-2 items-center" key={index}>
-            <img
-              src={member.playerImg}
-              alt={member.name}
-              className="size-10 border-2 border-white rounded-md"
-            />
-            <p>{member.name}</p>
-          </div>
-        ))}
+      <div className="w-full z-10">
+        <GameRoom thisRoom={thisRoom} />
       </div>
     </div>
   );

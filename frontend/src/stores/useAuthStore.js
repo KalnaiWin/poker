@@ -90,7 +90,7 @@ export const useAuthStore = create((set, get) => ({
       useMessageStore.getState().addIncomingMessage(message);
     });
 
-    console.log("✅ Socket connected");
+    // console.log("✅ Socket connected");
   },
 
   disconnectSocket: async () => {

@@ -4,8 +4,8 @@ import { ENV } from "../config/env.js";
 
 export const socketAuthMiddleware = async (socket, next) => {
   try {
-    console.log("Socket connection attempt from:", socket.handshake.address);
-    console.log("Cookies:", socket.handshake.headers.cookie);
+    // console.log("Socket connection attempt from:", socket.handshake.address);
+    // console.log("Cookies:", socket.handshake.headers.cookie);
 
     // extarct token from http cookie
     const token = socket.handshake.headers.cookie
