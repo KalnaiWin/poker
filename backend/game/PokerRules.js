@@ -33,7 +33,13 @@ export const shuffleCards = (table) => {
   return table;
 };
 
-export const dealTwoCards = (table) => {
-  if (table.length < 2) throw new Error("Not enough cards in the table");
-  return [table.pop(), table.pop()];
+export const dealCards = (table, count) => {
+  if (table.length < count) throw new Error("Not enough cards in the deck");
+
+  const dealt = [];
+  for (let i = 0; i < count; i++) {
+    dealt.push(table.pop());
+  }
+
+  return dealt;
 };

@@ -90,7 +90,7 @@ export const GetAllRoom = async (_, res) => {
   try {
     const rooms = await Room.find()
       .populate("creator", "name")
-      .populate("members", "_id name playerImg win lose")
+      .populate("members", "_id name playerImg win lose chips")
       .sort({ createdAt: -1 });
 
     return res.json(rooms);
