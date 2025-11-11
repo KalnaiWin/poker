@@ -3,6 +3,7 @@ import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { useMessageStore } from "./useChatStore";
 import { useAuthStore } from "./useAuthStore";
+import { usePokerStore } from "./usePokerStore";
 
 export const useRoomStore = create((set, get) => ({
   room: null,
@@ -68,6 +69,7 @@ export const useRoomStore = create((set, get) => ({
         });
         useMessageStore.getState().sendMessage(" joined the room", roomId);
       }
+      await get().getAllRoom();
       // toast.success("Joined room successfully");
       return 1;
     } catch (error) {
@@ -89,6 +91,9 @@ export const useRoomStore = create((set, get) => ({
         useMessageStore.getState().sendMessage(" left the room", roomId);
       }
       await axiosInstance.delete(`/message/${roomId}/reset`);
+      await get().getAllRoom();
+      usePokerStore.getState().isStart = 0;
+      usePokerStore.getState().resetGame?.();
       // toast.success("Left room successfully");
     } catch (error) {
       console.error("Error in leaving room:", error);

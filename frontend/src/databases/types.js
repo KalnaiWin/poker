@@ -1,12 +1,18 @@
 import {
+  ArrowUpCircle,
   Bot,
+  Check,
+  Coins,
   Croissant,
   Egg,
+  Gamepad2,
+  HandCoins,
   HatGlasses,
   Mars,
   Plane,
   Sandwich,
   Venus,
+  XCircle,
 } from "lucide-react";
 
 export const AvatarList = [
@@ -90,5 +96,44 @@ export const GenderList = [
     name: "plane",
     color: "text-orange-500",
     border: "border-orange-500",
+  },
+];
+
+export const ActionIcon = [
+  {
+    icon: Gamepad2,
+    name: "Guide",
+    action: "guide",
+    color: "text-sky-400",
+  },
+  {
+    icon: XCircle,
+    name: "Fold",
+    action: "fold",
+    color: "text-red-500",
+  },
+  {
+    icon: Check,
+    name: "Check",
+    action: "check",
+    color: "text-green-400",
+  },
+  {
+    icon: HandCoins,
+    name: "Call",
+    action: "call",
+    color: "text-yellow-400",
+  },
+  {
+    icon: Coins,
+    name: "Bet",
+    action: "bet",
+    color: "text-amber-400",
+  },
+  {
+    icon: ArrowUpCircle,
+    name: "Raise",
+    action: "raise",
+    color: "text-purple-400",
   },
 ];

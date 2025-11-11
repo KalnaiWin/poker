@@ -1,34 +1,32 @@
 import { useEffect } from "react";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useRoomStore } from "../stores/useRoomStore";
-import {
-  ArrowUpCircle,
-  Check,
-  Coins,
-  Gamepad2,
-  HandCoins,
-  LogOut,
-  XCircle,
-} from "lucide-react";
+import { DollarSign, LogOut } from "lucide-react";
 import { useNavigate } from "react-router";
 import { usePokerStore } from "../stores/usePokerStore";
+import { ActionIcon } from "../databases/types";
+import { ButtonAction } from "../components/ButtonAction";
 
 export const GameRoom = ({ thisRoom }) => {
-  const { authPlayer, socket } = useAuthStore();
+  const { authPlayer } = useAuthStore();
   const { getAllRoom, leaveRoom } = useRoomStore();
-  const { cards, startGame, initSocketListeners } = usePokerStore();
+  const {
+    cards,
+    startGame,
+    initSocketListeners,
+    isStart,
+    turnPlayerId,
+    currentCardonTable,
+  } = usePokerStore();
   const navigate = useNavigate();
-
 
   useEffect(() => {
     getAllRoom();
   }, [getAllRoom]);
 
   useEffect(() => {
-    if (socket) {
-      initSocketListeners();
-    }
-  }, [socket]);
+    initSocketListeners();
+  }, [initSocketListeners]);
 
   const Dealer = thisRoom.members[0];
   const SmallBlind = thisRoom.members[1];
@@ -36,70 +34,19 @@ export const GameRoom = ({ thisRoom }) => {
 
   return (
     <div className="relative w-full h-screen">
-      <div className="absolute left-5 top-5 flex flex-col gap-2">
-        <div className="flex items-center gap-2">
-          <Gamepad2 className="text-sky-400" />
-          Guide {"( G )"}
-        </div>
-        <div className="flex items-center gap-2">
-          <XCircle className="text-red-500" />
-          Fold {"( X )"}
-        </div>
-        <div className="flex items-center gap-2">
-          <Check className="text-green-400" />
-          Check {"( E )"}
-        </div>
-        <div className="flex items-center gap-2">
-          <HandCoins className="text-yellow-400" />
-          Call {"( C )"}
-        </div>
-        <div className="flex items-center gap-2">
-          <Coins className="text-amber-500" />
-          Bet {"( B )"}
-        </div>
-        <div className="flex items-center gap-2">
-          <ArrowUpCircle className="text-purple-400" />
-          Raise {"( R )"}
-        </div>
-
-        <button
-          onClick={() => {
-            leaveRoom(thisRoom._id);
-            navigate("/join");
-          }}
-          className="text-white bg-red-600 p-1 rounded-md flex items-center gap-2 hover:opacity-80 cursor-pointer"
-        >
-          <LogOut />
-          Leave
-        </button>
-        <div className="my-10 p-3 border-2 border-dashed rounded-md inline-flex gap-2 bg-white/30">
-          {cards
-            .filter((card) => card.name === authPlayer.name)
-            .map((card) => (
-              <div key={card.playerId} className="flex gap-2 w-fit">
-                <img
-                  src={`/assets/cards/${card.hand[0]}.png`}
-                  alt={card.playerId}
-                  className="w-20 h-auto object-cover"
-                />
-                <img
-                  src={`/assets/cards/${card.hand[1]}.png`}
-                  alt={card.playerId}
-                  className="w-20 h-auto object-cover"
-                />
-              </div>
-            ))}
-        </div>
-        {thisRoom.creator._id === authPlayer._id && (
-          <div
-            className="p-2 border-2 border-dashed"
-            onClick={() => startGame(thisRoom._id, 1)}
-          >
-            <p className="bg-blue-500 p-1 text-center rounded-sm hover:opacity-80 transition-all duration-300 cursor-pointer">
-              Start
-            </p>
+      <div className="absolute-center flex justify-center gap-2">
+        {currentCardonTable.map((card, idx) => (
+          <div key={idx} className="w-[15%]">
+            <img
+              src={`/assets/cards/${card}.png`}
+              alt={card}
+              className="w-full h-full object-contain"
+            />
           </div>
-        )}
+        ))}
+      </div>
+      <div className="absolute left-5 top-5 flex flex-col gap-2">
+        <ButtonAction thisRoom={thisRoom} />
       </div>
       <div className="absolute top-10 flex justify-center w-full">
         {Dealer ? (
@@ -151,6 +98,10 @@ export const GameRoom = ({ thisRoom }) => {
               >
                 {player.name}
               </p>
+              <div className="p-1 rounded-sm bg-white text-yellow-600 my-2 flex gap-1">
+                <DollarSign />
+                <p className="font-bold">{player.chips}</p>
+              </div>
             </div>
           );
         })}
