@@ -32,6 +32,9 @@ export const GameRoom = ({ thisRoom }) => {
   const SmallBlind = thisRoom.members[1];
   const BigBlind = thisRoom.members[2];
 
+  let isSmallBlind = 0;
+  let isBigBlind = 0;
+
   return (
     <div className="relative w-full h-screen">
       <div className="absolute-center flex justify-center gap-2">
@@ -46,7 +49,7 @@ export const GameRoom = ({ thisRoom }) => {
         ))}
       </div>
       <div className="absolute left-5 top-5 flex flex-col gap-2">
-        <ButtonAction thisRoom={thisRoom} />
+        <ButtonAction thisRoom={thisRoom} SB={isSmallBlind} BB={isBigBlind} />
       </div>
       <div className="absolute top-10 flex justify-center w-full">
         {Dealer ? (
@@ -57,18 +60,15 @@ export const GameRoom = ({ thisRoom }) => {
       </div>
       <div className="absolute bottom-10 flex gap-5 px-10">
         {thisRoom.members.map((player, index) => {
-          const isDealer = index === 0;
-          const isSmallBlind = index === 1;
-          const isBigBlind = index === 2;
+          isSmallBlind = index === 0;
+          isBigBlind = index === 1;
           return (
             <div
               className="flex flex-col items-center justify-center"
               key={player._id}
             >
               <div className="my-2">
-                {isDealer ? (
-                  <p className="text-blue-300">Deadler</p>
-                ) : isSmallBlind ? (
+                {isSmallBlind ? (
                   <p className="text-green-200">Small Blind</p>
                 ) : isBigBlind ? (
                   <p className="text-red-200">Big Blind</p>
