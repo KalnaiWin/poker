@@ -7,47 +7,53 @@ export const usePokerStore = create((set, get) => ({
   round: 0,
   isBet: 0,
   pot: 0,
+  smallBlind: null,
+  bigBlind: null,
   turnPlayerId: null,
   currentCardonTable: [],
+  blindsPosted: false,
+  bet: 0,
+  raise: 0,
+  playersCard: [],
+  showdown: false,
 
-  startGame: async (roomId, chipBet, playerId, action, role) => {
+  setIsStart: (value) => set({ isStart: value }),
+
+  startGame: async (roomId) => {
     const { socket } = useAuthStore.getState();
     const { isStart } = get();
+    console.log("isStart: ", isStart);
 
-    if (isStart) return;
-
-    set({ isStart: true, round: 0 });
+    if (isStart === 0) return;
+    set({ round: 0 });
+    const currentRound = get().round;
 
     console.log("Step 1: Shuffle card function in frontend");
     get().shuffleCards(roomId);
+    if (currentRound === 0) {
+      console.log("Current round: ", currentRound);
+      socket.emit("init_round", { roomId, round: currentRound });
+    }
 
-    console.log("Finish step 1");
-    console.log("Start bet to show 3 cards (game_start)");
-    socket.emit("game_start", { roomId, playerId, role });
-
-    // preflop
-    console.log("Step: 7: Start Preflop in frontend");
-    // preflop round
-
-    // set({ isStart: true, round: 2 }); // flop
-    // socket.emit("flop_round", { roomId, round: 2 }); // flop round
-
-    // set({ isStart: true, round: 3 }); // turn
-    // socket.emit("turn_round", { roomId, round: 3 }); // turn round
-
-    // set({ isStart: true, round: 4 }); // river
-    // socket.emit("river_round", { roomId, round: 4 }); // river round
+    socket.on("init_round", ({ roomId, round }) => {
+      console.log("Current round: ", round);
+      socket.emit("init_round", { roomId, round });
+      if (round === 5) {
+        console.log("Show down - Stop");
+      }
+    });
   },
 
   betChips: async (chipBet, roomId, playerId, action) => {
     const { socket } = useAuthStore.getState();
+    socket.on("result_action", ({ bet }) => {
+      set({ bet: bet });
+      console.log("Bet status in frontend:", bet);
+    });
+
     console.log(`PlayerId ${playerId}'s turn sent ${action}`);
     console.log("Step 5: Bet_chip in frontend");
-    if (action === "bet") {
-      socket.emit("bet_chip", { chipBet, roomId, playerId, action });
-    } else {
-      socket.emit("bet_chip", { roomId, playerId, action });
-    }
+    socket.emit("bet_chip", { chipBet, roomId, playerId, action });
   },
 
   shuffleCards: async (roomId) => {
@@ -60,9 +66,15 @@ export const usePokerStore = create((set, get) => ({
     const { socket } = useAuthStore.getState();
     if (!socket) return;
 
+    socket.off("result_action");
+    socket.on("result_action", ({ bet }) => {
+      set({ bet });
+      console.log("Bet status in frontend:", bet);
+    });
+
     socket.off("next_turn");
-    socket.on("next_turn", ({ playerId }) => {
-      console.log("It's now player turn:", playerId);
+    socket.on("next_turn", ({ playerId, round }) => {
+      console.log("It's now player turn:", playerId, " at round: ", round);
       set({ turnPlayerId: playerId });
     });
 
@@ -70,21 +82,56 @@ export const usePokerStore = create((set, get) => ({
     socket.on("preflop_round", ({ round, roomId }) => {
       console.log("Preflop started! Round:", round);
       set({ round: round });
-      socket.emit("start_preflop", { roomId, round });
+      socket.emit("start_flop", { roomId, round });
+      console.log("Finish round preflop - Ready for flop round");
+    });
+
+    socket.off("flop_round");
+    socket.on("flop_round", ({ round, roomId }) => {
+      console.log("Flop started! Round:", round);
+      set({ round: round });
+      socket.emit("start_turn", { roomId, round });
       console.log("Finish");
+    });
+
+    socket.off("turn_round");
+    socket.on("turn_round", ({ round, roomId }) => {
+      console.log("Turn started! Round:", round);
+      set({ round: round });
+      socket.emit("start_river", { roomId, round });
+      console.log("Finish");
+    });
+
+    socket.off("river_round");
+    socket.on("river_round", ({ round, roomId }) => {
+      console.log("River started! Round:", round);
+      set({ round: round });
+      socket.emit("showdown", { roomId, round });
+      set({ showdown: true });
+      console.log("Finish");
+    });
+
+    socket.off("player_card_show");
+    socket.on("player_card_show", ({ showdownCards }) => {
+      console.log("Showdown cards:", showdownCards);
+      set(() => ({
+        playersCard: showdownCards,
+      }));
+      console.log("finish");
+    });
+
+    socket.off("end_round");
+    socket.on("end_round", ({ room, roomId }) => {
+      console.log("End round - Show card(s)");
+      set(() => ({
+        currentCardonTable: [...room.currentCard],
+      }));
+      console.log("Current card: ", get().currentCardonTable);
     });
 
     socket.off("round_end");
     socket.on("round_end", ({ round, pot }) => {
       console.log(`Round ${round} ended. Pot: ${pot}`);
-    });
-
-    socket.off("end_preflop");
-    socket.on("end_preflop", (room, card) => {
-      set((state) => ({
-        currentCardonTable: [...state.currentCardonTable, ...room.currentCard],
-      }));
-      console.log("Current card: ", get().currentCardonTable);
     });
 
     socket.off("room_reset");
@@ -96,7 +143,7 @@ export const usePokerStore = create((set, get) => ({
     });
 
     socket.off("next_round");
-    socket.on("next_round", ({ round }) => {
+    socket.on("next_round", ({ roomId, round }) => {
       console.log(`Starting Round ${round}`);
       set({ round: round });
     });
@@ -109,7 +156,6 @@ export const usePokerStore = create((set, get) => ({
         const existingIndex = state.cards.findIndex(
           (p) => p.playerId === playerId
         );
-
         if (existingIndex !== -1) {
           const updatedCards = [...state.cards];
           updatedCards[existingIndex] = { playerId, name, hand };

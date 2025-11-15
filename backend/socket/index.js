@@ -1,6 +1,6 @@
-import { ChatHandlers } from "./ChatHandlers.js";
-import { PokerHandlers } from "./PokerHandlers.js";
-import { RoomHandlers } from "./RoomHandlers.js";
+import { ChatHandlers } from "./func/ChatHandlers.js";
+import { PokerHandlers } from "./func/PokerHandlers.js";
+import { RoomHandlers } from "./func/RoomHandlers.js";
 
 // storing online players
 export const playerSocketMap = {}; // { playerId: socketId }
