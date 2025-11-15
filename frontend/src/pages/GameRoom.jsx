@@ -9,14 +9,13 @@ import { ButtonAction } from "../components/ButtonAction";
 
 export const GameRoom = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
-  const { getAllRoom, leaveRoom } = useRoomStore();
+  const { getAllRoom } = useRoomStore();
   const {
-    cards,
-    startGame,
     initSocketListeners,
     isStart,
-    turnPlayerId,
     currentCardonTable,
+    playersCard,
+    showdown,
   } = usePokerStore();
   const navigate = useNavigate();
 
@@ -27,13 +26,6 @@ export const GameRoom = ({ thisRoom }) => {
   useEffect(() => {
     initSocketListeners();
   }, [initSocketListeners]);
-
-  const Dealer = thisRoom.members[0];
-  const SmallBlind = thisRoom.members[1];
-  const BigBlind = thisRoom.members[2];
-
-  let isSmallBlind = 0;
-  let isBigBlind = 0;
 
   return (
     <div className="relative w-full h-screen">
@@ -49,19 +41,17 @@ export const GameRoom = ({ thisRoom }) => {
         ))}
       </div>
       <div className="absolute left-5 top-5 flex flex-col gap-2">
-        <ButtonAction thisRoom={thisRoom} SB={isSmallBlind} BB={isBigBlind} />
+        {showdown === false && <ButtonAction thisRoom={thisRoom} />}
       </div>
       <div className="absolute top-10 flex justify-center w-full">
-        {Dealer ? (
-          <p>{Dealer.name}</p>
-        ) : (
-          <p className="text-gray-400 italic">Loading room...</p>
-        )}
+        <p className="text-gray-400 italic">
+          {isStart ? "Start" : "Loading room..."}
+        </p>
       </div>
       <div className="absolute bottom-10 flex gap-5 px-10">
         {thisRoom.members.map((player, index) => {
-          isSmallBlind = index === 0;
-          isBigBlind = index === 1;
+          const isSmallBlind = index === 0;
+          const isBigBlind = index === 1;
           return (
             <div
               className="flex flex-col items-center justify-center"
@@ -101,6 +91,16 @@ export const GameRoom = ({ thisRoom }) => {
               <div className="p-1 rounded-sm bg-white text-yellow-600 my-2 flex gap-1">
                 <DollarSign />
                 <p className="font-bold">{player.chips}</p>
+              </div>
+              <div className="flex gap-2 mt-2">
+                {playersCard[player._id]?.map((card, i) => (
+                  <img
+                    key={i}
+                    src={`/assets/cards/${card}.png`}
+                    alt={card}
+                    className="w-10 h-14 object-contain"
+                  />
+                ))}
               </div>
             </div>
           );

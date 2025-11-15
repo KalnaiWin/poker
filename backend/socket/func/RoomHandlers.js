@@ -1,4 +1,4 @@
-import { createTable, shuffleCards } from "../game/PokerRules.js";
+import { createTable, shuffleCards } from "../../game/PokerRules.js";
 
 export function RoomHandlers(io, socket, rooms, playerSocketMap) {
   socket.on("join_room", async ({ roomId, playerId, playerName }) => {
@@ -13,7 +13,16 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         currentCard: [],
         bets: new Map(),
         playersInRound: new Set(),
+        playerActed: new Set(),
+        preflopStarted: false,
+        flopStarted: false,
+        turnStarted: false,
+        riverStarted: false,
+        showdown: false,
         isBet: false,
+        isCall: false,
+        isRaise: false,
+        isCheck: false,
       });
     }
 
