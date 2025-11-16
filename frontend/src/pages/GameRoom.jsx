@@ -10,13 +10,8 @@ import { ButtonAction } from "../components/ButtonAction";
 export const GameRoom = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
   const { getAllRoom } = useRoomStore();
-  const {
-    initSocketListeners,
-    isStart,
-    currentCardonTable,
-    playersCard,
-    showdown,
-  } = usePokerStore();
+  const { initSocketListeners, isStart, currentCardonTable, playersCard } =
+    usePokerStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -41,7 +36,7 @@ export const GameRoom = ({ thisRoom }) => {
         ))}
       </div>
       <div className="absolute left-5 top-5 flex flex-col gap-2">
-        {showdown === false && <ButtonAction thisRoom={thisRoom} />}
+        <ButtonAction thisRoom={thisRoom} />
       </div>
       <div className="absolute top-10 flex justify-center w-full">
         <p className="text-gray-400 italic">

@@ -39,6 +39,9 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     room.pot = room.pot || 0;
     room.currentBet = room.currentBet || 0;
 
+    const myBet = room.bets.get(playerId) || 0;
+    const currentBet = room.currentBet;
+
     const playerIndex = room.members.findIndex((p) => p._id === playerId);
     if (playerIndex === -1) return;
 
@@ -50,71 +53,117 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     }
 
     if (action === "fold") {
-      // room.playersInRound.delete(playerId);
-      // room.bets.delete(playerId);
+      room.playersInRound.delete(playerId);
+      room.bets.delete(playerId);
+      room.playerActed.delete(playerId);
       console.log(`${player.name}'s action: fold`);
     } else if (action === "check") {
-      // const myBet = room.bets.get(playerId) || 0;
-      // if (myBet !== room.currentBet) {
-      //   console.log("Invalid check attempt by", playerId);
-      //   io.to(roomId).emit("invalid_action", {
-      //     playerId,
-      //     reason: "cannot check",
-      //   });
-      //   return;
-      // }
+      if (myBet !== room.currentBet) {
+        console.log("Invalid check attempt by", playerId);
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "cannot check",
+        });
+        return;
+      }
       console.log(`${player.name}'s action: check`);
     } else if (action === "call") {
-      // const myBet = room.bets.get(playerId) || 0;
-      // const toCall = Math.max(0, room.currentBet - myBet);
-      // const take = Math.min(toCall, player.chips);
-      // if (take <= 0) {
-      //   console.log("Out of chips --> should fold");
-      //   return;
-      // } else {
-      //   player.chips -= take;
-      //   room.pot += take;
-      //   room.bets.set(playerId, myBet + take);
-      //   room.isCall = 1;
-      // }
+      const toCall = currentBet - myBet;
+      if (toCall <= 0) {
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "Nothing to call (you should check or fold instead)",
+        });
+        return;
+      } else {
+        const callAmount = Math.min(toCall, player.chips);
+        player.chips -= callAmount;
+        room.pot += callAmount;
+        room.bets.set(playerId, myBet + callAmount);
+
+        console.log(`${player.name} calls for ${callAmount}`);
+
+        // All-in handling
+        if (player.chips === 0) {
+          console.log(`${player.name} is all-in`);
+        }
+      }
+      console.log(`${player.name}'s action: call`);
     } else if (action === "bet") {
-      // const myBet = room.bets.get(playerId) || 0;
-      // const targetBet = Number(chipBet) || 0;
-      // if (targetBet <= myBet) {
-      //   console.log(
-      //     "Invalid bet amount from",
-      //     playerId,
-      //     targetBet,
-      //     "myBet:",
-      //     myBet
-      //   );
-      //   io.to(roomId).emit("invalid_action", {
-      //     playerId,
-      //     reason: "invalid bet amount",
-      //   });
-      //   return;
-      // }
-      // const additional = targetBet - myBet;
-      // if (additional > player.chips) {
-      //   const allin = player.chips;
-      //   player.chips -= allin;
-      //   room.pot += allin;
-      //   room.bets.set(playerId, myBet + allin);
-      //   if (myBet + allin > room.currentBet) room.currentBet = myBet + allin;
-      // } else {
-      //   player.chips -= additional;
-      //   room.pot += additional;
-      //   room.bets.set(playerId, targetBet);
-      //   if (targetBet > room.currentBet) room.currentBet = targetBet;
-      // }
+      const betSize = Number(chipBet);
+      if (currentBet > 0) {
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "Cannot bet, a bet already exists (use raise)",
+        });
+        return;
+      }
+
+      if (betSize <= 0) {
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "Invalid bet amount",
+        });
+        return;
+      }
+
+      if (betSize > player.chips) {
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "Bet exceeds your chips",
+        });
+        return;
+      }
+
+      // Deduct chips
+      player.chips -= betSize;
+      room.pot += betSize;
+      room.bets.set(playerId, betSize);
+      room.currentBet = betSize;
+
+      console.log(`${player.name} bets ${betSize}`);
+      room.playerActed.clear();
       console.log(`${player.name}'s action: bet`);
       if (room.isBet !== 1) {
         room.isBet = 1;
-      } 
-      io.to(roomId).emit("result_action", { bet: room.isBet });
-
-      console.log(room.isBet);
+      }
     } else if (action === "raise") {
+      const raiseTo = Number(chipBet);
+      if (currentBet === 0) {
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "Cannot raise, no existing bet (use bet)",
+        });
+        return;
+      }
+
+      if (raiseTo <= currentBet) {
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "Raise must be higher than current bet",
+        });
+        return;
+      }
+
+      const required = raiseTo - myBet;
+
+      if (required > player.chips) {
+        io.to(roomId).emit("invalid_action", {
+          playerId,
+          reason: "Not enough chips to raise",
+        });
+        return;
+      }
+
+      // Deduct chips
+      player.chips -= required;
+      room.pot += required;
+      room.bets.set(playerId, raiseTo);
+      room.currentBet = raiseTo;
+
+      console.log(`${player.name} raises to ${raiseTo}`);
+
+      room.playerActed.clear();
       console.log(`${player.name}'s action: raise`);
       room.isRaise = 1;
       console.log(room.isRaise);
@@ -152,6 +201,8 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     //   pot: room.pot,
     // });
 
+    const nextPlayer = room.members[room.currentTurn];
+
     if (everyoneActed) {
       io.to(roomId).emit("round_end", { round: room.round, roomId });
       console.log("Round_end in backend: ", room.round);
@@ -169,6 +220,11 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
 
       room.currentTurn = startIndex;
 
+      io.to(roomId).emit("result_action", {
+        bet: 0,
+        raise: 0,
+      });
+
       if (room.round === 1) {
         console.log("preflop stage");
         io.to(roomId).emit("preflop_round", { round: 1, roomId });
@@ -184,12 +240,27 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       }
       console.log("Round advanced to", room.round);
     } else {
-      const nextPlayer = room.members[room.currentTurn];
+      // io.to(roomId).emit("result_action", {
+      //   bet: room.isBet,
+      //   raise: room.isRaise,
+      // });
       io.to(roomId).emit("next_turn", {
         playerId: nextPlayer._id,
         round: room.round,
       });
     }
+    io.to(roomId).emit("update_state", {
+      currentBet: room.currentBet,
+      turnPlayerId: nextPlayer._id,
+
+      players: room.members.map((p) => ({
+        _id: p._id,
+        name: p.name,
+        chips: p.chips,
+        betThisRound: room.bets.get(p._id) || 0,
+        isInRound: room.playersInRound.has(p._id),
+      })),
+    });
   });
 
   socket.on("init_round", ({ roomId, round }) => {

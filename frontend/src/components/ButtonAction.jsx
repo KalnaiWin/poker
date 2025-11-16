@@ -21,26 +21,31 @@ export const ButtonAction = ({ thisRoom }) => {
     startGame,
     initSocketListeners,
     isStart,
-    turnPlayerId,
     betChips,
     bet,
     raise,
-    call,
-    check,
-    fold,
     setIsStart,
     round,
+    showdown,
+
+    players,
+    currentBet,
+    turnPlayerId,
   } = usePokerStore();
   const navigate = useNavigate();
 
   const [betAmount, setBetAmount] = useState(10);
   const [raiseAmount, setRaiseAmount] = useState(10);
 
+  const myPlayer = players.find((p) => p._id === authPlayer._id);
+  const yourBet = myPlayer?.betThisRound ?? 0;
   const isMyTurn = turnPlayerId === authPlayer._id;
-  const isDisabled = !isMyTurn;
 
-  const preflop_round = bet === 0;
-  const cantCheck = raise === 1;
+  const canCheck = isMyTurn && currentBet === yourBet;
+  const canCall = isMyTurn && currentBet > yourBet;
+  const canBet = isMyTurn && currentBet === 0;
+  const canRaise = isMyTurn && currentBet > yourBet;
+  const canFold = isMyTurn;
 
   useEffect(() => {
     getAllRoom();
@@ -58,7 +63,7 @@ export const ButtonAction = ({ thisRoom }) => {
 
     if (action === "call" || action === "fold" || action === "check") {
       betChips(undefined, thisRoom._id, authPlayer._id, action);
-    } else if (action === "bet") {
+    } else if (action === "bet" || action === "raise") {
       betChips(chipAmount, thisRoom._id, authPlayer._id, action);
     }
   };
@@ -71,91 +76,82 @@ export const ButtonAction = ({ thisRoom }) => {
             Waiting for other players...
           </div>
         )}
-
-        {1 && (
+        <button
+          className={`flex items-center gap-2 ${1 ? "opacity-50" : ""}`}
+          disabled={1}
+        >
+          <Gamepad2 className="text-sky-400" />
+          Guide
+        </button>
+        {showdown === false && (
           <div className="flex flex-col gap-2">
             <button
               className={`flex items-center gap-2 ${
-                isDisabled ? "opacity-50" : ""
-              }`}
-              disabled={isDisabled}
-            >
-              <Gamepad2 className="text-sky-400" />
-              Guide
-            </button>
-
-            <button
-              className={`flex items-center gap-2 ${
-                isDisabled ? "opacity-50" : ""
+                !canFold ? "opacity-50" : ""
               }`}
               onClick={() => handleAction("fold", 0)}
+              disabled={!canFold}
             >
-              <XCircle className="text-red-500" />
-              Fold
+              <XCircle className="text-red-500" /> Fold
             </button>
 
             <button
               className={`flex items-center gap-2 ${
-                isDisabled || preflop_round || cantCheck ? "opacity-50" : ""
+                !canCheck ? "opacity-50" : ""
               }`}
               onClick={() => handleAction("check", 0)}
-              disabled={isDisabled || preflop_round || cantCheck}
+              disabled={!canCheck}
             >
-              <Check className="text-green-400" />
-              Check
+              <Check className="text-green-400" /> Check
             </button>
 
             <button
               className={`flex items-center gap-2 ${
-                isDisabled || preflop_round ? "opacity-50" : ""
+                !canCall ? "opacity-50" : ""
               }`}
               onClick={() => handleAction("call", 0)}
-              disabled={isDisabled || preflop_round}
+              disabled={!canCall}
             >
-              <HandCoins className="text-yellow-400" />
-              Call
+              <HandCoins className="text-yellow-400" /> Call
             </button>
 
             <button
               className={`flex items-center gap-2 ${
-                isDisabled ? "opacity-50" : ""
+                !canBet ? "opacity-50" : ""
               }`}
               onClick={() => handleAction("bet", betAmount)}
-              disabled={isDisabled}
+              disabled={!canBet}
             >
               <Coins className="text-amber-500" />
               <input
                 type="number"
                 className="w-[30%] px-1 rounded-sm border border-white text-black"
-                placeholder="10"
                 value={betAmount}
                 onChange={(e) => setBetAmount(Number(e.target.value))}
-                disabled={isDisabled}
+                disabled={!canBet}
               />
               Bet
             </button>
 
             <button
               className={`flex items-center gap-2 ${
-                isDisabled || preflop_round ? "opacity-50" : ""
+                !canRaise ? "opacity-50" : ""
               }`}
               onClick={() => handleAction("raise", raiseAmount)}
-              disabled={isDisabled || preflop_round}
+              disabled={!canRaise}
             >
               <ArrowUpCircle className="text-purple-400" />
               <input
                 type="number"
                 className="w-[30%] px-1 rounded-sm border border-white text-black"
-                placeholder="10"
                 value={raiseAmount}
                 onChange={(e) => setRaiseAmount(Number(e.target.value))}
-                disabled={isDisabled}
+                disabled={!canRaise}
               />
               Raise
             </button>
           </div>
         )}
-
         <button
           onClick={() => {
             leaveRoom(thisRoom._id);
@@ -167,7 +163,6 @@ export const ButtonAction = ({ thisRoom }) => {
           Leave
         </button>
       </div>
-
       <div className="my-10 p-3 border-2 border-dashed rounded-md inline-flex gap-2 bg-white/30">
         {cards &&
           cards

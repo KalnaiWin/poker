@@ -5,17 +5,19 @@ export const usePokerStore = create((set, get) => ({
   cards: [],
   isStart: 0,
   round: 0,
-  isBet: 0,
   pot: 0,
   smallBlind: null,
   bigBlind: null,
-  turnPlayerId: null,
   currentCardonTable: [],
   blindsPosted: false,
   bet: 0,
   raise: 0,
   playersCard: [],
   showdown: false,
+
+  turnPlayerId: null,
+  currentBet: 0,
+  players: [],
 
   setIsStart: (value) => set({ isStart: value }),
 
@@ -46,10 +48,10 @@ export const usePokerStore = create((set, get) => ({
 
   betChips: async (chipBet, roomId, playerId, action) => {
     const { socket } = useAuthStore.getState();
-    socket.on("result_action", ({ bet }) => {
-      set({ bet: bet });
-      console.log("Bet status in frontend:", bet);
-    });
+    // socket.on("result_action", ({ bet }) => {
+    //   set({ bet: bet });
+    //   console.log("Bet status in frontend:", bet);
+    // });
 
     console.log(`PlayerId ${playerId}'s turn sent ${action}`);
     console.log("Step 5: Bet_chip in frontend");
@@ -66,10 +68,26 @@ export const usePokerStore = create((set, get) => ({
     const { socket } = useAuthStore.getState();
     if (!socket) return;
 
+    socket.off("update_state");
+    socket.on("update_state", ({ currentBet, players, turnPlayerId }) => {
+      set({
+        currentBet,
+        players,
+        turnPlayerId,
+      });
+    });
+
+    socket.off("invalid_action");
+    socket.on("invalid_action", ({ playerId, reason }) => {
+      console.log(`${playerId} ${reason}`);
+    });
+
     socket.off("result_action");
-    socket.on("result_action", ({ bet }) => {
-      set({ bet });
+    socket.on("result_action", ({ bet, raise }) => {
+      set({ bet: bet });
+      set({ raise: raise });
       console.log("Bet status in frontend:", bet);
+      console.log("Raise status in frontend:", raise);
     });
 
     socket.off("next_turn");

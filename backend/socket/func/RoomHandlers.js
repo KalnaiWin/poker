@@ -8,11 +8,9 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         members: [],
         pot: 0,
         round: 1,
-        currentBet: 0,
         currentTurn: 0,
         currentCard: [],
         bets: new Map(),
-        playersInRound: new Set(),
         playerActed: new Set(),
         preflopStarted: false,
         flopStarted: false,
@@ -20,9 +18,10 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         riverStarted: false,
         showdown: false,
         isBet: false,
-        isCall: false,
         isRaise: false,
-        isCheck: false,
+
+        playersInRound: new Set(),
+        currentBet: 0,
       });
     }
 
