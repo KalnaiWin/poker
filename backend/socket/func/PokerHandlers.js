@@ -6,7 +6,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     const room = rooms.get(roomId);
     if (!room) return;
 
-    // If deck has less than 2 cards, reshuffle
     if (room.deck.length < room.members.length * 2) {
       room.deck = shuffleCards(room.deck);
     }
@@ -127,6 +126,9 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       if (room.isBet !== 1) {
         room.isBet = 1;
       }
+      io.to(roomId).emit("result_action", { bet: room.isBet });
+
+      console.log(room.isBet);
     } else if (action === "raise") {
       const raiseTo = Number(chipBet);
       if (currentBet === 0) {

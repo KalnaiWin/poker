@@ -29,7 +29,6 @@ export const shuffleCards = (table) => {
     const j = Math.floor(Math.random() * (i + 1));
     [table[i], table[j]] = [table[j], table[i]];
   }
-  // console.log(table);
   return table;
 };
 
