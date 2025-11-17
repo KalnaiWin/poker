@@ -17,6 +17,9 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         turnStarted: false,
         riverStarted: false,
         showdown: false,
+
+        playersInRound: new Set(),
+        currentBet: 0,
       });
     }
 

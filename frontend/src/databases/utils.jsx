@@ -29,3 +29,43 @@ export const GenderIcon = ({ name }) => {
       return <HatGlasses className="text-purple-500" />;
   }
 };
+
+export const BestHandColor = (name) => {
+  switch (name) {
+    case "High Card":
+      return "text-gray-500";
+    case "One Pair":
+      return "text-blue-500";
+    case "Two Pair":
+      return "text-indigo-500";
+    case "Three of a Kind":
+      return "text-purple-500";
+    case "Straight":
+      return "text-pink-500";
+    case "Flush":
+      return "text-red-500";
+    case "Full House":
+      return "text-orange-500";
+    case "Four of a Kind":
+      return "text-yellow-500";
+    case "Straight Flush":
+      return "text-green-500";
+    case "Royal Flush":
+      return "text-teal-500";
+    default:
+      return "text-black";
+  }
+};
+
+export const RankPositionColor = (position) => {
+  switch (position) {
+    case 1:
+      return "text-yellow-500";
+    case 2:
+      return "text-gray-500";
+    case 3:
+      return "text-amber-500";
+    default:
+      return "text-black";
+  }
+};

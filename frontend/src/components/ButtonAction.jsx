@@ -22,10 +22,7 @@ export const ButtonAction = ({ thisRoom }) => {
     initSocketListeners,
     isStart,
     betChips,
-    bet,
-    raise,
     setIsStart,
-    round,
     showdown,
 
     players,

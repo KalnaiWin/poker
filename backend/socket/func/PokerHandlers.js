@@ -1,8 +1,7 @@
-import { dealCards, shuffleCards } from "../../game/PokerRules.js";
+import { dealCards, ResultTable, shuffleCards } from "../../game/PokerRules.js";
 
 export function PokerHandlers(io, socket, rooms, playerSocketMap) {
   socket.on("deal_cards", ({ roomId }) => {
-    console.log("Step 2: Deal card in backend");
     const room = rooms.get(roomId);
     if (!room) return;
 
@@ -12,7 +11,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
 
     room.members.forEach((player) => {
       player.hand = dealCards(room.deck, 2);
-      console.log(`${player.name} hand has: `, player.hand);
     });
 
     room.members.forEach((player) => {
@@ -26,8 +24,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
   });
 
   socket.on("bet_chip", ({ chipBet, roomId, playerId, action }) => {
-    console.log("Step 6: bet_chip in backend");
-
     const room = rooms.get(roomId);
     if (!room) return;
     room.playerActed.add(playerId);
@@ -47,7 +43,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     const player = room.members[playerIndex];
 
     if (!room.playersInRound.has(playerId)) {
-      console.log("Player not in round:", playerId);
       return;
     }
 
@@ -55,17 +50,23 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       room.playersInRound.delete(playerId);
       room.bets.delete(playerId);
       room.playerActed.delete(playerId);
-      console.log(`${player.name}'s action: fold`);
+      if (room.playersInRound.size === 1) {
+        const winnerPlayer = [...room.playersInRound][0] || 0;
+        const result = [];
+        result.push({ winnerPlayer });
+        socket
+          .to(roomId)
+          .emit("player_card_show", { showdownCards: null, result, finish: 1 });
+        return;
+      }
     } else if (action === "check") {
       if (myBet !== room.currentBet) {
-        console.log("Invalid check attempt by", playerId);
         io.to(roomId).emit("invalid_action", {
           playerId,
           reason: "cannot check",
         });
         return;
       }
-      console.log(`${player.name}'s action: check`);
     } else if (action === "call") {
       const toCall = currentBet - myBet;
       if (toCall <= 0) {
@@ -80,14 +81,10 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         room.pot += callAmount;
         room.bets.set(playerId, myBet + callAmount);
 
-        console.log(`${player.name} calls for ${callAmount}`);
-
         // All-in handling
         if (player.chips === 0) {
-          console.log(`${player.name} is all-in`);
         }
       }
-      console.log(`${player.name}'s action: call`);
     } else if (action === "bet") {
       const betSize = Number(chipBet);
       if (currentBet > 0) {
@@ -114,21 +111,12 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         return;
       }
 
-      // Deduct chips
       player.chips -= betSize;
       room.pot += betSize;
       room.bets.set(playerId, betSize);
       room.currentBet = betSize;
 
-      console.log(`${player.name} bets ${betSize}`);
       room.playerActed.clear();
-      console.log(`${player.name}'s action: bet`);
-      if (room.isBet !== 1) {
-        room.isBet = 1;
-      }
-      io.to(roomId).emit("result_action", { bet: room.isBet });
-
-      console.log(room.isBet);
     } else if (action === "raise") {
       const raiseTo = Number(chipBet);
       if (currentBet === 0) {
@@ -157,20 +145,13 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         return;
       }
 
-      // Deduct chips
       player.chips -= required;
       room.pot += required;
       room.bets.set(playerId, raiseTo);
       room.currentBet = raiseTo;
 
-      console.log(`${player.name} raises to ${raiseTo}`);
-
       room.playerActed.clear();
-      console.log(`${player.name}'s action: raise`);
-      room.isRaise = 1;
-      console.log(room.isRaise);
     } else {
-      console.log("Unknown action:", action);
       return;
     }
 
@@ -191,23 +172,10 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       room.playerActed.has(pid)
     );
 
-    // const allCalled = [...room.playersInRound].every((pid) => {
-    //   const b = room.bets.get(pid) || 0;
-    //   return b >= room.currentBet;
-    // });
-
-    // io.to(roomId).emit("chips_updated", {
-    //   playerId: player._id,
-    //   chips: player.chips,
-    //   bet: room.bets.get(player._id) || 0,
-    //   pot: room.pot,
-    // });
-
     const nextPlayer = room.members[room.currentTurn];
 
     if (everyoneActed) {
       io.to(roomId).emit("round_end", { round: room.round, roomId });
-      console.log("Round_end in backend: ", room.round);
       room.round += 1;
       room.currentBet = 0;
       room.bets = new Map();
@@ -228,24 +196,15 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       });
 
       if (room.round === 1) {
-        console.log("preflop stage");
         io.to(roomId).emit("preflop_round", { round: 1, roomId });
       } else if (room.round === 2) {
-        console.log("Flop stage");
         io.to(roomId).emit("flop_round", { roomId, round: 2, room });
       } else if (room.round === 3) {
-        console.log("Turn stage");
         io.to(roomId).emit("turn_round", { round: 3, roomId });
       } else if (room.round == 4) {
-        console.log("River stage");
         io.to(roomId).emit("river_round", { round: 4, roomId });
       }
-      console.log("Round advanced to", room.round);
     } else {
-      // io.to(roomId).emit("result_action", {
-      //   bet: room.isBet,
-      //   raise: room.isRaise,
-      // });
       io.to(roomId).emit("next_turn", {
         playerId: nextPlayer._id,
         round: room.round,
@@ -270,16 +229,13 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     if (!room) return;
 
     room.round = round;
-    console.log("Room :", room.round);
     room.currentBet = 0;
     room.pot = room.pot || 0;
     room.bets = room.bets || new Map();
     room.playerActed = new Set();
     room.playersInRound = new Set(room.members.map((m) => m._id));
 
-    console.log("Ready for next_turn bet");
     const nextPlayer = room.members[0];
-    console.log("player Id at init_round (next_turn): ", nextPlayer._id);
     io.to(roomId).emit("next_turn", { playerId: nextPlayer._id, round });
   });
 
@@ -293,14 +249,10 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     const preflop = dealCards(room.deck, 3);
     room.currentCard.push(...preflop);
 
-    console.log("Flop started — dealing 3 cards:");
-    console.log("End flop");
     io.to(roomId).emit("end_round", { room, roomId });
 
     const newRound = round;
-    console.log("Next round: ", newRound);
     io.to(roomId).emit("init_round", { roomId, round: newRound });
-    console.log("Send init round: ", newRound);
   });
 
   socket.on("start_turn", ({ roomId, round }) => {
@@ -313,8 +265,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     const turn = dealCards(room.deck, 1);
     room.currentCard.push(...turn);
 
-    console.log("Turn started - dealing 1 cards: ", turn);
-    console.log("End turn");
     io.to(roomId).emit("end_round", {
       room: {
         ...room,
@@ -323,9 +273,7 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       roomId,
     });
     const newRound = round;
-    console.log("Next round: ", newRound);
     io.to(roomId).emit("init_round", { roomId, round: newRound });
-    console.log("Send init round: ", newRound);
   });
 
   socket.on("start_river", ({ roomId, round }) => {
@@ -338,8 +286,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     const river = dealCards(room.deck, 1);
     room.currentCard.push(...river);
 
-    console.log("River started - dealing 1 cards: ", river);
-    console.log("End river");
     io.to(roomId).emit("end_round", {
       room: {
         ...room,
@@ -348,9 +294,7 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       roomId,
     });
     const newRound = round;
-    console.log("Next round: ", newRound);
     io.to(roomId).emit("init_round", { roomId, round: newRound });
-    console.log("Send init round: ", newRound);
   });
 
   socket.on("showdown", ({ roomId, round }) => {
@@ -360,18 +304,22 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     room.showdown = true;
     const showdownCards = {};
     room.members.forEach((player) => {
-      showdownCards[player._id] = player.hand;
+      showdownCards[player._id] = {
+        players: player,
+        cards: player.hand,
+      };
     });
 
-    console.log("All cards of players", showdownCards);
+    const result = ResultTable(room.currentCard, showdownCards);
 
     io.to(roomId).emit("player_card_show", {
       showdownCards,
+      result,
+      finish: 1,
     });
   });
 
   socket.on("next_round", ({ roomId, round }) => {
     io.to(roomId).emit("init_round", { roomId, round });
-    console.log("Init round: ", round);
   });
 }
