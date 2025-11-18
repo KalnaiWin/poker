@@ -88,7 +88,6 @@ export const scoreHand = (cards) => {
     return true;
   })();
 
-  // Royal Flush / Straight Flush
   if (isFlush && isStraight) {
     if (ranks[0] === 14) {
       return { value: 9000000, handName: "Royal Flush", cards };
@@ -96,7 +95,6 @@ export const scoreHand = (cards) => {
     return { value: 8000000 + ranks[0], handName: "Straight Flush", cards };
   }
 
-  // Four of a kind
   const four = Object.keys(rankCount).find((r) => rankCount[r] === 4);
   if (four) {
     return {
@@ -106,7 +104,6 @@ export const scoreHand = (cards) => {
     };
   }
 
-  // Full house
   const three = Object.keys(rankCount).find((r) => rankCount[r] === 3);
   const pair = Object.keys(rankCount).find((r) => rankCount[r] === 2);
   if (three && pair) {
@@ -117,17 +114,14 @@ export const scoreHand = (cards) => {
     };
   }
 
-  // Flush
   if (isFlush) {
     return { value: 5000000 + ranks[0], handName: "Flush", cards };
   }
 
-  // Straight
   if (isStraight) {
     return { value: 4000000 + ranks[0], handName: "Straight", cards };
   }
 
-  // Three of a kind
   if (three) {
     return {
       value: 3000000 + parseInt(three),
@@ -136,19 +130,16 @@ export const scoreHand = (cards) => {
     };
   }
 
-  // Two pair
   const pairs = Object.keys(rankCount).filter((r) => rankCount[r] === 2);
   if (pairs.length === 2) {
     const high = Math.max(...pairs.map(Number));
     return { value: 2000000 + high, handName: "Two Pair", cards };
   }
 
-  // One pair
   if (pair) {
     return { value: 1000000 + parseInt(pair), handName: "One Pair", cards };
   }
 
-  // High card
   return { value: ranks[0], handName: "High Card", cards };
 };
 

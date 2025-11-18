@@ -35,7 +35,7 @@ export const GameRoom = ({ thisRoom }) => {
           <div className="flex gap-2 w-full flex-col items-center bg-black p-4">
             <h1 className="text-2xl font-bold text-red-400">Cards on table</h1>
             <div className="flex w-full gap-2">
-              {result[0].bestCards.map((img, idx) => (
+              {result[0]?.bestCards?.map((img, idx) => (
                 <div key={idx}>
                   <img src={`/assets/cards/${img}.png`} alt="Card on table" />
                 </div>
@@ -43,7 +43,7 @@ export const GameRoom = ({ thisRoom }) => {
             </div>
           </div>
           <div className="w-full">
-            {playersCard !== null &&
+            {playersCard !== null ? (
               result.map((res) => (
                 <div
                   key={res.player._id}
@@ -87,7 +87,10 @@ export const GameRoom = ({ thisRoom }) => {
                     {res.status}
                   </div>
                 </div>
-              ))}
+              ))
+            ) : (
+              <div className="text-white text-3xl bg-red-500 p-5">Winner: {result[0]}</div>
+            )}
           </div>
         </div>
         <div className="absolute bottom-5 left-1/2 -translate-x-1/2">

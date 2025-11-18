@@ -51,12 +51,17 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       room.bets.delete(playerId);
       room.playerActed.delete(playerId);
       if (room.playersInRound.size === 1) {
-        const winnerPlayer = [...room.playersInRound][0] || 0;
-        const result = [];
-        result.push({ winnerPlayer });
-        socket
-          .to(roomId)
-          .emit("player_card_show", { showdownCards: null, result, finish: 1 });
+        const winnerPlayer = room.members.find(
+          (player) => playerId === player._id
+        );
+        const winnerPlayerName = winnerPlayer.name;
+        console.log(winnerPlayerName);
+        const result = [winnerPlayerName];
+        io.to(roomId).emit("player_card_show", {
+          showdownCards: null,
+          result,
+          finish: 1,
+        });
         return;
       }
     } else if (action === "check") {
@@ -81,7 +86,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         room.pot += callAmount;
         room.bets.set(playerId, myBet + callAmount);
 
-        // All-in handling
         if (player.chips === 0) {
         }
       }

@@ -1,5 +1,6 @@
 import { create } from "zustand";
 import { useAuthStore } from "./useAuthStore";
+import toast from "react-hot-toast";
 
 export const usePokerStore = create((set, get) => ({
   cards: [],
@@ -66,7 +67,9 @@ export const usePokerStore = create((set, get) => ({
     });
 
     socket.off("invalid_action");
-    socket.on("invalid_action", ({ playerId, reason }) => {});
+    socket.on("invalid_action", ({ playerId, reason }) => {
+      toast.error({ reason });
+    });
 
     socket.off("next_turn");
     socket.on("next_turn", ({ playerId, round }) => {
@@ -102,12 +105,13 @@ export const usePokerStore = create((set, get) => ({
     socket.on("player_card_show", ({ showdownCards, result, finish }) => {
       if (showdownCards === null) {
         set({ playersCard: null, result: result, finish });
+      } else {
+        set(() => ({
+          playersCard: showdownCards,
+          result: result,
+          finish,
+        }));
       }
-      set(() => ({
-        playersCard: showdownCards,
-        result: result,
-        finish,
-      }));
     });
 
     socket.off("end_round");
