@@ -70,7 +70,6 @@ export const useRoomStore = create((set, get) => ({
         useMessageStore.getState().sendMessage(" joined the room", roomId);
       }
       await get().getAllRoom();
-      // toast.success("Joined room successfully");
       return 1;
     } catch (error) {
       console.error("Error in joining room:", error);
@@ -89,12 +88,15 @@ export const useRoomStore = create((set, get) => ({
       if (socket && authPlayer?._id) {
         socket.emit("leave_room", { roomId, playerId: authPlayer._id });
         useMessageStore.getState().sendMessage(" left the room", roomId);
+        socket.off("player_left_room");
+        socket.on("player_left_room", { roomId, playerId: authPlayer._id });
       }
       await axiosInstance.delete(`/message/${roomId}/reset`);
       await get().getAllRoom();
       usePokerStore.getState().isStart = 0;
       usePokerStore.getState().resetGame?.();
-      // toast.success("Left room successfully");
+      const res = await axiosInstance.get("/room");
+      set({ room: res.data });
     } catch (error) {
       console.error("Error in leaving room:", error);
       toast.error(error?.response?.data?.message || "Leave failed");
@@ -112,9 +114,7 @@ export const useRoomStore = create((set, get) => ({
       if (socket) {
         socket.emit("kick_player", { roomId, playerId });
       }
-
       toast.success("Player kicked successfully");
-
       const res = await axiosInstance.get("/room");
       set({ room: res.data });
     } catch (error) {

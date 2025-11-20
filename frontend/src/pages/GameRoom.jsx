@@ -1,7 +1,7 @@
 import { useEffect } from "react";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useRoomStore } from "../stores/useRoomStore";
-import { DollarSign, LogOut } from "lucide-react";
+import { DollarSign, LogOut, Triangle, Youtube } from "lucide-react";
 import { useNavigate } from "react-router";
 import { usePokerStore } from "../stores/usePokerStore";
 import { ButtonAction } from "../components/ButtonAction";
@@ -89,11 +89,13 @@ export const GameRoom = ({ thisRoom }) => {
                 </div>
               ))
             ) : (
-              <div className="text-white text-3xl bg-red-500 p-5">Winner: {result[0]}</div>
+              <div className="text-white text-3xl bg-red-500 p-5 flex items-center">
+                Winner: {result[0]} 👑{" "}
+              </div>
             )}
           </div>
         </div>
-        <div className="absolute bottom-5 left-1/2 -translate-x-1/2">
+        <div className="absolute bottom-5 left-1/2 -translate-x-1/2 flex gap-4 items-center">
           <button
             onClick={() => {
               leaveRoom(thisRoom._id);
@@ -103,6 +105,10 @@ export const GameRoom = ({ thisRoom }) => {
           >
             <LogOut />
             Leave
+          </button>
+          <button className="text-white bg-blue-600 p-2 w-fit rounded-md flex items-center gap-2 hover:opacity-80 cursor-pointer">
+            <Triangle className="rotate-90" />
+            Continue
           </button>
         </div>
       </div>

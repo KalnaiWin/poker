@@ -183,7 +183,7 @@ export const ButtonAction = ({ thisRoom }) => {
         <div
           className="p-2 border-2 border-dashed w-[40%]"
           onClick={() => {
-            setIsStart(1);
+            setIsStart(!isStart);
             startGame(thisRoom._id);
           }}
         >

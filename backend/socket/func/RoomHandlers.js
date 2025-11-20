@@ -12,7 +12,6 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         currentCard: [],
         bets: new Map(),
         playerActed: new Set(),
-        preflopStarted: false,
         flopStarted: false,
         turnStarted: false,
         riverStarted: false,
@@ -20,6 +19,10 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
 
         playersInRound: new Set(),
         currentBet: 0,
+
+        readyPlayers: new Set(),
+        timerRunning: false,
+        continueTimer: null,
       });
     }
 
@@ -43,7 +46,7 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
       });
 
     socket.join(roomId);
-    // io.to(roomId).emit("room_update", room);
+    io.to(roomId).emit("player_joined_room", { roomId, playerId });
 
     const allCards = room.members
       .filter((p) => p.hand && p.hand.length > 0)
@@ -57,8 +60,6 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
     if (allCards.length > 0) {
       io.to(roomId).emit("all_cards_sync", { cards: allCards });
     }
-    // console.log(room);
-    // console.log(`${socket.player.name} joined room ${roomId}`);
   });
 
   socket.on("leave_room", ({ roomId, playerId }) => {
@@ -79,17 +80,41 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         currentTurn: 0,
         bets: new Map(),
         playersInRound: new Set(),
-        preflopStarted: false,
       });
 
       io.to(roomId).emit("room_reset", room);
     }
 
+    io.to(roomId).emit("player_left_room", { roomId, playerId });
     socket.leave(roomId);
-    // console.log(`${socket.player.name} left room ${roomId}`);
   });
 
   socket.on("kick_player", ({ roomId, playerId }) => {
-    // console.log("Kick request received:", roomId, playerId);
+    const room = rooms.get(roomId);
+    if (!room) return;
+
+    room.members = room.members.filter((p) => p._id !== playerId);
+
+    io.to(roomId).emit("leave_cards", { playerId });
+
+    const kickedSocketId = playerSocketMap[playerId];
+    if (kickedSocketId) {
+      io.to(kickedSocketId).emit("you_are_kicked", { roomId });
+    }
+
+    if (room.members.length === 0) {
+      Object.assign(room, {
+        deck: shuffleCards(createTable()),
+        currentCard: [],
+        pot: 0,
+        round: 1,
+        currentBet: 0,
+        currentTurn: 0,
+        bets: new Map(),
+        playersInRound: new Set(),
+      });
+
+      io.to(roomId).emit("room_reset", room);
+    }
   });
 }

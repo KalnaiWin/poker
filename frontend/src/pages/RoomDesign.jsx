@@ -4,13 +4,32 @@ import { useAuthStore } from "../stores/useAuthStore";
 import { useRoomStore } from "../stores/useRoomStore";
 import { ChatPage } from "../pages/ChatPage";
 import { GameRoom } from "../pages/GameRoom";
+import { useNavigate } from "react-router";
 
 export const RoomDesign = ({ thisRoom }) => {
-  const { authPlayer } = useAuthStore();
+  const { authPlayer, socket } = useAuthStore();
   const { kickPlayer, getAllRoom } = useRoomStore();
 
+  const navigate = useNavigate();
+
   useEffect(() => {
-    getAllRoom();
+    if (!socket) return;
+
+    const onPlayerActed = async ({ roomId, playerId }) => {
+      await getAllRoom();
+    };
+    socket.on("player_joined_room", onPlayerActed);
+    socket.on("player_left_room", onPlayerActed);
+    socket.on("you_are_kicked", () => {
+      onPlayerActed;
+      navigate("/join");
+    });
+
+    return () => {
+      socket.off("player_joined_room", onPlayerActed);
+      socket.off("player_left_room", onPlayerActed);
+      socket.off("you_are_kicked", onPlayerActed);
+    };
   }, [getAllRoom]);
 
   const [tab, openTab] = useState(false);
