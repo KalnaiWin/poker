@@ -2,7 +2,6 @@ import { create } from "zustand";
 import { axiosInstance } from "../lib/axios";
 import toast from "react-hot-toast";
 import { io } from "socket.io-client";
-import { useMessageStore } from "./useChatStore";
 
 const BASE_URL =
   import.meta.env.MODE === "development" ? "http://localhost:8000" : "/";
@@ -84,13 +83,6 @@ export const useAuthStore = create((set, get) => ({
     socket.on("getOnlineplayers", (users) => {
       set({ onlineUsers: users });
     });
-
-    socket.on("receive_message", ({ message, roomId }) => {
-      // console.log("Received real-time message:", message, "from room:", roomId);
-      useMessageStore.getState().addIncomingMessage(message);
-    });
-
-    // console.log("✅ Socket connected");
   },
 
   disconnectSocket: async () => {

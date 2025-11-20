@@ -15,7 +15,7 @@ export const RoomDesign = ({ thisRoom }) => {
   useEffect(() => {
     if (!socket) return;
 
-    const onPlayerActed = async ({ roomId, playerId }) => {
+    const onPlayerActed = async () => {
       await getAllRoom();
     };
     socket.on("player_joined_room", onPlayerActed);

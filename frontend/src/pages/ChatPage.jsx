@@ -3,8 +3,14 @@ import { useAuthStore } from "../stores/useAuthStore";
 import { useMessageStore } from "../stores/useChatStore";
 
 export const ChatPage = ({ thisRoom }) => {
-  const { getMessage, isLoadingMessage, isSending, messages, sendMessage } =
-    useMessageStore();
+  const {
+    getMessage,
+    isLoadingMessage,
+    isSending,
+    messages,
+    sendMessage,
+    addIncomingMessage,
+  } = useMessageStore();
 
   const { authPlayer, connectSocket } = useAuthStore();
   const [text, setText] = useState("");
@@ -29,17 +35,16 @@ export const ChatPage = ({ thisRoom }) => {
     const { socket } = useAuthStore.getState();
     if (!socket) return;
 
-    const handleSystemMessage = (msg) => {
-      console.log("Received system message:", msg);
-      useMessageStore.getState().addSystemMessage(msg);
+    const onReceiveMessage = ({ message }) => {
+      addIncomingMessage(message);
     };
-
-    socket.on("system_message", handleSystemMessage);
+    
+    socket.on("receive_message", onReceiveMessage);
 
     return () => {
-      socket.off("system_message", handleSystemMessage);
+      socket.off("receive_message", onReceiveMessage);
     };
-  }, []);
+  }, [getMessage]);
 
   const handleSendMessage = async (e) => {
     e.preventDefault();
@@ -75,7 +80,7 @@ export const ChatPage = ({ thisRoom }) => {
           <div className="flex justify-center items-center h-full">
             <div className="text-gray-400">Loading messages...</div>
           </div>
-        ) : messages.length === 0 ? (
+        ) : messages?.length === 0 ? (
           <div className="flex justify-center items-center h-full">
             <div className="text-gray-400 text-center">
               <p>No messages yet.</p>
