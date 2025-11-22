@@ -70,6 +70,7 @@ export const useRoomStore = create((set, get) => ({
         useMessageStore.getState().sendMessage(" joined the room", roomId);
       }
       await get().getAllRoom();
+      console.log("join room");
       return 1;
     } catch (error) {
       console.error("Error in joining room:", error);
@@ -96,6 +97,7 @@ export const useRoomStore = create((set, get) => ({
       usePokerStore.getState().isStart = 0;
       usePokerStore.getState().resetGame?.();
       const res = await axiosInstance.get("/room");
+      console.log("leave room");
       set({ room: res.data });
     } catch (error) {
       console.error("Error in leaving room:", error);

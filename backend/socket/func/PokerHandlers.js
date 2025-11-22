@@ -55,7 +55,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
           (player) => playerId === player._id
         );
         const winnerPlayerName = winnerPlayer.name;
-        console.log(winnerPlayerName);
         const result = [winnerPlayerName];
         io.to(roomId).emit("player_card_show", {
           showdownCards: null,
@@ -194,11 +193,7 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
 
       room.currentTurn = startIndex;
 
-      io.to(roomId).emit("result_action", {
-        bet: 0,
-        raise: 0,
-      });
-
+      console.log("Finish round: ", room.round);
       if (room.round === 1) {
         io.to(roomId).emit("preflop_round", { round: 1, roomId });
       } else if (room.round === 2) {
@@ -213,7 +208,9 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         playerId: nextPlayer._id,
         round: room.round,
       });
+      console.log("Next player is: ", nextPlayer.name);
     }
+    console.log("update state at bet_chips");
     io.to(roomId).emit("update_state", {
       currentBet: room.currentBet,
       turnPlayerId: nextPlayer._id,

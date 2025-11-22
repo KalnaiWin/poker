@@ -44,9 +44,9 @@ export const ButtonAction = ({ thisRoom }) => {
   const canRaise = isMyTurn && currentBet > yourBet;
   const canFold = isMyTurn;
 
-  useEffect(() => {
-    getAllRoom();
-  }, [getAllRoom]);
+  // useEffect(() => {
+  //   getAllRoom();
+  // }, [getAllRoom]);
 
   useEffect(() => {
     initSocketListeners();
@@ -183,11 +183,20 @@ export const ButtonAction = ({ thisRoom }) => {
         <div
           className="p-2 border-2 border-dashed w-[40%]"
           onClick={() => {
+            if (thisRoom.members.length < 2) return;
             setIsStart(!isStart);
             startGame(thisRoom._id);
+            console.log(isStart);
           }}
+          disabled={thisRoom.members.length < 2}
         >
-          <p className="bg-blue-500 p-1 text-center rounded-sm hover:opacity-80 transition-all duration-300 cursor-pointer">
+          <p
+            className={`bg-blue-500 p-1 text-center rounded-sm hover:opacity-80 transition-all duration-300 ${
+              thisRoom.members.length < 2
+                ? "cursor-not-allowed opacity-70"
+                : "cursor-pointer"
+            }`}
+          >
             {isStart ? "Stop" : "Start"}
           </p>
         </div>

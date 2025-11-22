@@ -38,7 +38,7 @@ export const ChatPage = ({ thisRoom }) => {
     const onReceiveMessage = ({ message }) => {
       addIncomingMessage(message);
     };
-    
+
     socket.on("receive_message", onReceiveMessage);
 
     return () => {

@@ -19,6 +19,7 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
 
         playersInRound: new Set(),
         currentBet: 0,
+        playersSpectator: new Set(),
 
         readyPlayers: new Set(),
         timerRunning: false,
@@ -66,6 +67,12 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
     const room = rooms.get(roomId);
     if (!room) return;
 
+    room.playersInRound.delete(playerId);
+
+    room.members = room.members.map((p) =>
+      p._id === playerId ? { ...p, hand: [], chipsBet: [] } : p
+    );
+
     room.members = room.members.filter((p) => p._id !== playerId);
 
     io.to(roomId).emit("leave_cards", { playerId });
@@ -73,13 +80,25 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
     if (room.members.length === 0) {
       Object.assign(room, {
         deck: shuffleCards(createTable()),
-        currentCard: [],
+        members: [],
         pot: 0,
         round: 1,
-        currentBet: 0,
         currentTurn: 0,
+        currentCard: [],
         bets: new Map(),
+        playerActed: new Set(),
+        flopStarted: false,
+        turnStarted: false,
+        riverStarted: false,
+        showdown: false,
+
         playersInRound: new Set(),
+        currentBet: 0,
+        playersSpectator: new Set(),
+
+        readyPlayers: new Set(),
+        timerRunning: false,
+        continueTimer: null,
       });
 
       io.to(roomId).emit("room_reset", room);
@@ -105,13 +124,25 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
     if (room.members.length === 0) {
       Object.assign(room, {
         deck: shuffleCards(createTable()),
-        currentCard: [],
+        members: [],
         pot: 0,
         round: 1,
-        currentBet: 0,
         currentTurn: 0,
+        currentCard: [],
         bets: new Map(),
+        playerActed: new Set(),
+        flopStarted: false,
+        turnStarted: false,
+        riverStarted: false,
+        showdown: false,
+
         playersInRound: new Set(),
+        currentBet: 0,
+        playersSpectator: new Set(),
+
+        readyPlayers: new Set(),
+        timerRunning: false,
+        continueTimer: null,
       });
 
       io.to(roomId).emit("room_reset", room);

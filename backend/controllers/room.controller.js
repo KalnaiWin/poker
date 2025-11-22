@@ -151,15 +151,8 @@ export const LeaveRoom = async (req, res) => {
     room.members = room.members.filter(
       (member) => member.toString() !== playerId.toString()
     );
-
-    // if (room.creator.toString() === playerId.toString()) {
-    //   await room.deleteOne();
-    //   return res.json({ message: "You were the creator, room deleted" });
-    // }
-
     await room.save();
     res.json({
-      // message: "Left room successfully",
       room,
     });
   } catch (error) {

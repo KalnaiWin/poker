@@ -20,13 +20,13 @@ export const GameRoom = ({ thisRoom }) => {
   } = usePokerStore();
   const navigate = useNavigate();
 
-  useEffect(() => {
-    getAllRoom();
-  }, [getAllRoom]);
+  // useEffect(() => {
+  //   getAllRoom();
+  // }, [getAllRoom]);
 
-  useEffect(() => {
-    initSocketListeners();
-  }, [initSocketListeners]);
+  // useEffect(() => {
+  //   initSocketListeners();
+  // }, []);
 
   if (finish) {
     return (
