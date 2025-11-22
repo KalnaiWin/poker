@@ -1,32 +1,30 @@
-import { useEffect } from "react";
 import { useAuthStore } from "../stores/useAuthStore";
 import { useRoomStore } from "../stores/useRoomStore";
-import { DollarSign, LogOut, Triangle, Youtube } from "lucide-react";
+import { DollarSign, LogOut, Triangle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { usePokerStore } from "../stores/usePokerStore";
 import { ButtonAction } from "../components/ButtonAction";
 import { BestHandColor, RankPositionColor } from "../databases/utils";
+import { useEffect } from "react";
 
 export const GameRoom = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
-  const { getAllRoom, leaveRoom } = useRoomStore();
-  const {
-    initSocketListeners,
-    isStart,
-    currentCardonTable,
-    playersCard,
-    result,
-    finish,
-  } = usePokerStore();
+  const { leaveRoom, getAllRoom } = useRoomStore();
+  const { isStart, currentCardonTable, playersCard, result, finish } =
+    usePokerStore();
   const navigate = useNavigate();
 
-  // useEffect(() => {
-  //   getAllRoom();
-  // }, [getAllRoom]);
+  useEffect(() => {
+    if (finish) {
+      console.log("Game finished! Show results modal or reset UI.");
+    } else {
+      console.log("Game restarted or empty room");
+    }
+  }, [finish]);
 
-  // useEffect(() => {
-  //   initSocketListeners();
-  // }, []);
+  useEffect(() => {
+    getAllRoom();
+  }, [getAllRoom]);
 
   if (finish) {
     return (

@@ -15,7 +15,7 @@ import {
 
 export const ButtonAction = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
-  const { getAllRoom, leaveRoom } = useRoomStore();
+  const { leaveRoom } = useRoomStore();
   const {
     cards,
     startGame,
@@ -44,9 +44,6 @@ export const ButtonAction = ({ thisRoom }) => {
   const canRaise = isMyTurn && currentBet > yourBet;
   const canFold = isMyTurn;
 
-  // useEffect(() => {
-  //   getAllRoom();
-  // }, [getAllRoom]);
 
   useEffect(() => {
     initSocketListeners();
