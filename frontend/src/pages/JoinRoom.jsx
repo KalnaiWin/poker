@@ -10,6 +10,7 @@ import {
 } from "lucide-react";
 import { Link, Navigate } from "react-router";
 import { useAuthStore } from "../stores/useAuthStore";
+import { AllRoomLoader } from "../components/loaders/AllRoomLoader";
 
 export const JoinRoom = () => {
   const { getAllRoom, isLoadingRoom, room, joinRoom } = useRoomStore();
@@ -28,7 +29,7 @@ export const JoinRoom = () => {
   const playerRooms = room?.filter(
     (r) => r.creator._id?.toString() === authPlayer?._id?.toString()
   );
-  if (isLoadingRoom) return <p>Loading rooms...</p>;
+  if (isLoadingRoom) return <AllRoomLoader />;
 
   return (
     <div className="bg-yellow-950 w-full min-h-screen text-white">
