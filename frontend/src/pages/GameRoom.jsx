@@ -6,12 +6,20 @@ import { usePokerStore } from "../stores/usePokerStore";
 import { ButtonAction } from "../components/ButtonAction";
 import { BestHandColor, RankPositionColor } from "../databases/utils";
 import { useEffect } from "react";
+import { MainEffect } from "../components/effect/pokerEffect";
 
 export const GameRoom = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
   const { leaveRoom, getAllRoom } = useRoomStore();
-  const { isStart, currentCardonTable, playersCard, result, finish } =
-    usePokerStore();
+  const {
+    isStart,
+    currentCardonTable,
+    playersCard,
+    result,
+    finish,
+    initSocketListeners,
+    effect,
+  } = usePokerStore();
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -24,6 +32,7 @@ export const GameRoom = ({ thisRoom }) => {
 
   useEffect(() => {
     getAllRoom();
+    initSocketListeners();
   }, [getAllRoom]);
 
   if (finish) {
@@ -117,6 +126,14 @@ export const GameRoom = ({ thisRoom }) => {
     <>
       {!result && (
         <div className="relative w-full h-screen">
+          {effect && (
+            <div className="relative z-50 w-full h-screen">
+              <div className="absolute-center">
+                <MainEffect />
+              </div>
+            </div>
+          )}
+
           <div className="absolute-center flex justify-center gap-2">
             {currentCardonTable.map((card, idx) => (
               <div key={idx} className="w-[15%]">

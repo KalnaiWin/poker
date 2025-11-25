@@ -6,3 +6,23 @@
   left: 50%;
   transform: translate(-50%, -50%);
 }
+
+@keyframes slide_and_fade {
+  0% {
+    transform: translate(-600px, 0);
+    opacity: 0;
+  }
+  66% {
+    transform: translate(0, 0);
+    opacity: 1;
+  }
+  100% {
+    transform: translate(0, -1000px);
+    opacity: 0;
+  }
+}
+
+.animate-slide {
+  clip-path: polygon(0 0, 88% 0, 100% 50%, 88% 100%, 0 100%, 12% 50%);
+  animation: slide_and_fade 3s ease-in-out forwards;
+}
