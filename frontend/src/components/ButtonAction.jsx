@@ -35,7 +35,7 @@ export const ButtonAction = ({ thisRoom }) => {
   const [raiseAmount, setRaiseAmount] = useState(10);
 
   const myPlayer = players.find((p) => p._id === authPlayer._id);
-  const yourBet = myPlayer?.betThisRound ?? 0;
+  const yourBet = myPlayer?.betThisRound ?? 0;  
   const isMyTurn = turnPlayerId === authPlayer._id;
 
   const canCheck = isMyTurn && currentBet === yourBet;
@@ -43,7 +43,6 @@ export const ButtonAction = ({ thisRoom }) => {
   const canBet = isMyTurn && currentBet === 0;
   const canRaise = isMyTurn && currentBet > yourBet;
   const canFold = isMyTurn;
-
 
   useEffect(() => {
     initSocketListeners();

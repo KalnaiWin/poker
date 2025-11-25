@@ -105,7 +105,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       }
-
       if (betSize > player.chips) {
         io.to(roomId).emit("invalid_action", {
           playerId,
@@ -113,12 +112,10 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       }
-
       player.chips -= betSize;
       room.pot += betSize;
       room.bets.set(playerId, betSize);
       room.currentBet = betSize;
-
       room.playerActed.clear();
     } else if (action === "raise") {
       const raiseTo = Number(chipBet);
@@ -192,14 +189,15 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       }
 
       room.currentTurn = startIndex;
-
-      console.log("Finish round: ", room.round);
       if (room.round === 1) {
         io.to(roomId).emit("preflop_round", { round: 1, roomId });
+        io.to(roomId).emit("round_changed", { round: 2 });
       } else if (room.round === 2) {
         io.to(roomId).emit("flop_round", { roomId, round: 2, room });
+        io.to(roomId).emit("round_changed", { round: 3 });
       } else if (room.round === 3) {
         io.to(roomId).emit("turn_round", { round: 3, roomId });
+        io.to(roomId).emit("round_changed", { round: 4 });
       } else if (room.round == 4) {
         io.to(roomId).emit("river_round", { round: 4, roomId });
       }
@@ -208,13 +206,10 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         playerId: nextPlayer._id,
         round: room.round,
       });
-      console.log("Next player is: ", nextPlayer.name);
     }
-    console.log("update state at bet_chips");
     io.to(roomId).emit("update_state", {
       currentBet: room.currentBet,
       turnPlayerId: nextPlayer._id,
-
       players: room.members.map((p) => ({
         _id: p._id,
         name: p.name,
@@ -322,5 +317,9 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
 
   socket.on("next_round", ({ roomId, round }) => {
     io.to(roomId).emit("init_round", { roomId, round });
+  });
+
+  socket.on("round_effect_start", ({ roomId, round }) => {
+    io.to(roomId).emit("round_changed", { round });
   });
 }
