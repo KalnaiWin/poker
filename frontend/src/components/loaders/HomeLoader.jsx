@@ -21,9 +21,10 @@ export const HomeLoader = () => {
         </p>
       </div>
       <div className="flex gap-6 mt-10">
-        <div className="animate-pulse px-20 py-6 rounded-lg border-4 border-blue-400 bg-blue-500/30 text-white font-bold text-xl shadow-lg select-none"></div>
-        <div className="animate-pulse px-20 py-6 rounded-lg border-4 border-yellow-400 bg-yellow-500/30 text-white font-bold text-xl shadow-lg select-none"></div>
-        <div className="animate-pulse px-20 py-6 rounded-lg border-4 border-red-400 bg-red-500/30 text-white font-bold text-xl shadow-lg select-none"></div>
+        <div className="animate-pulse px-10 py-3 rounded-lg border-4 border-green-400 bg-blue-500/30 text-white font-bold text-xl shadow-lg select-none"></div>
+        <div className="animate-pulse px-10 py-3 rounded-lg border-4 border-blue-400 bg-blue-500/30 text-white font-bold text-xl shadow-lg select-none"></div>
+        <div className="animate-pulse px-10 py-3 rounded-lg border-4 border-yellow-400 bg-yellow-500/30 text-white font-bold text-xl shadow-lg select-none"></div>
+        <div className="animate-pulse px-10 py-3 rounded-lg border-4 border-red-400 bg-red-500/30 text-white font-bold text-xl shadow-lg select-none"></div>
       </div>
     </div>
   );

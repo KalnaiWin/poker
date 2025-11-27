@@ -88,3 +88,33 @@ export const LogOut = (_, res) => {
   res.cookie("jwt", "", { maxAge: 0 });
   res.status(200).json({ message: "Logged out successfully." });
 };
+
+export const GetHistory = async (req, res) => {
+  const playerId = req.player._id;
+
+  try {
+    const player = await Player.findById(playerId).populate({
+      path: "history",
+      populate: [
+        {
+          path: "opponents",
+          select: "name playerImg gender",
+        },
+        {
+          path: "playerHands.playerId",
+          select: "name playerImg",
+        },
+      ],
+      options: { sort: { createdAt: -1 }, limit: 50 },
+    });
+
+    if (!player) {
+      return res.status(404).json({ message: "Player not found" });
+    }
+
+    return res.json(player.history);
+  } catch (error) {
+    console.error("Error in get history controller: ", error);
+    res.status(500).json({ message: "Internal Server Error" });
+  }
+};

@@ -2,16 +2,18 @@ import mongoose from "mongoose";
 
 const historySchema = new mongoose.Schema(
   {
-    player: {
+    playerId: {
       type: mongoose.Schema.Types.ObjectId,
       ref: "Player",
       required: true,
     },
-    opponent: {
-      type: mongoose.Schema.Types.ObjectId,
-      ref: "Player",
-      required: true,
-    },
+    opponents: [
+      {
+        type: mongoose.Schema.Types.ObjectId,
+        ref: "Player",
+        required: true,
+      },
+    ],
     result: {
       type: String,
       enum: ["win", "lose", "draw"],
@@ -32,6 +34,28 @@ const historySchema = new mongoose.Schema(
       type: Date,
       default: Date.now,
     },
+    card: [
+      {
+        type: String,
+      },
+    ],
+    playerHands: [
+      {
+        playerId: {
+          type: mongoose.Schema.Types.ObjectId,
+          ref: "Player",
+          required: true,
+        },
+        hand: [
+          {
+            type: String, // The 2 hole cards, e.g., ["AH", "KD"]
+          },
+        ],
+        rank: {
+          type: String,
+        },
+      },
+    ],
   },
   { timestamps: true }
 );

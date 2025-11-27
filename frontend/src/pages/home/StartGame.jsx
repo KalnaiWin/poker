@@ -35,10 +35,15 @@ export const StartGame = () => {
             </div>
           </div>
 
-          {/* Toogle matches played, winrate */}
           <div className="bg-white w-full"></div>
 
           <div className="flex gap-5 my-5">
+            <Link
+              to={"/dashboard"}
+              className="flex gap-2 bg-green-500 text-black rounded-md px-4 py-2 border-3 border-dotted cursor-pointer hover:opacity-80"
+            >
+              Dashboard
+            </Link>
             <Link
               to={"/create"}
               className="flex gap-2 bg-blue-500 text-black rounded-md px-4 py-2 border-3 border-dotted cursor-pointer hover:opacity-80"
