@@ -47,6 +47,7 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
       });
 
     socket.join(roomId);
+    socket.join(playerId);
     io.to(roomId).emit("player_joined_room", { roomId, playerId });
 
     const allCards = room.members

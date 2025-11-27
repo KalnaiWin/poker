@@ -70,7 +70,6 @@ export const usePokerStore = create((set, get) => ({
 
     socket.off();
     socket.on("round_changed", ({ round }) => {
-      console.log("Effect called: ", round);
       let effectName = null;
       switch (round) {
         case 0:
@@ -193,26 +192,23 @@ export const usePokerStore = create((set, get) => ({
     socket.off("all_cards_sync");
     socket.on("all_cards_sync", ({ cards }) => {
       set({ cards });
-      console.log("Round upadte: ", round);
       socket.emit("round_effect_start", { roomId, round });
     });
 
     socket.off("update_state");
     socket.on("update_state", ({ currentBet, turnPlayerId, players }) => {
-      console.log("Called in frontend: ");
       set({
         currentBet,
         turnPlayerId,
         players,
       });
-      players.forEach((player) => {
-        console.log(`Player ${player.name} bet:`, player.betThisRound);
-      });
-      console.log("Called in frontend, all players:", players);
-      console.log(
-        "Bets:",
-        players.map((p) => ({ name: p.name, bet: p.betThisRound }))
-      );
+    });
+
+    socket.off("player_update");
+    socket.on("player_update", (updatedPlayer) => {
+      useAuthStore.setState({ authPlayer: updatedPlayer });
+      console.log("called 2");
+      console.log("Updated authPlayer:", useAuthStore.getState().authPlayer);
     });
 
     socket.off("leave_cards");

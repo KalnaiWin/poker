@@ -15,7 +15,6 @@ const playerSchema = new mongoose.Schema(
     password: {
       type: String,
       required: [true, "Password is required"],
-      required: [true, "This ppassword has been alreayd used"],
     },
     playerImg: {
       type: String,

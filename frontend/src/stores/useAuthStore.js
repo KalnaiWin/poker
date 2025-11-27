@@ -10,6 +10,7 @@ export const useAuthStore = create((set, get) => ({
   authPlayer: null,
   isCheckingAuth: true,
   isAuthLoading: false,
+  history: null,
 
   socket: null,
   onlineUsers: [],
@@ -66,6 +67,15 @@ export const useAuthStore = create((set, get) => ({
     }
   },
 
+  historyMatch: async () => {
+    try {
+      const res = await axiosInstance.get("/auth/history");
+      set({ history: res.data });
+    } catch (error) {
+      toast.error(error.response?.data?.message || "Load history failed");
+    }
+  },
+
   // call when signup or login
   connectSocket: async () => {
     const { authPlayer } = get();
@@ -79,7 +89,6 @@ export const useAuthStore = create((set, get) => ({
 
     set({ socket: socket });
 
-    // listen for online users event
     socket.on("getOnlineplayers", (users) => {
       set({ onlineUsers: users });
     });

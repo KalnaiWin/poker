@@ -1,3 +1,6 @@
+import History from "../../databases/models/History.js";
+import Player from "../../databases/models/Player.js";
+import Room from "../../databases/models/Room.js";
 import { dealCards, ResultTable, shuffleCards } from "../../game/PokerRules.js";
 
 export function PokerHandlers(io, socket, rooms, playerSocketMap) {
@@ -293,8 +296,9 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     io.to(roomId).emit("init_round", { roomId, round: newRound });
   });
 
-  socket.on("showdown", ({ roomId, round }) => {
+  socket.on("showdown", async ({ roomId, round }) => {
     const room = rooms.get(roomId);
+    const roomPlayed = await Room.findById(roomId);
     if (round !== 4 || !roomId || room.showdown) return;
 
     room.showdown = true;
@@ -307,6 +311,52 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     });
 
     const result = ResultTable(room.currentCard, showdownCards);
+
+    for (const player of room.members) {
+      const opponents = room.members
+        .filter((p) => p._id !== player._id)
+        .map((p) => p._id);
+
+      const res = result.find((r) => r.player._id === player._id);
+      const chipsChange = res?.chips || 0;
+
+      const playerHands = room.members.map((player) => {
+        const playerResult = result.find((r) => r.player._id === player._id);
+        return {
+          playerId: player._id,
+          hand: player.hand,
+          rank: playerResult?.bestHand || "High Card",
+        };
+      });
+
+      const newHistory = await History.create({
+        playerId: player._id,
+        opponents,
+        result: res.status,
+        chipsChange,
+        duration: room.duration,
+        room: { id: roomId, name: roomPlayed.name },
+        card: room.currentCard,
+        playerHands: playerHands,
+      });
+
+      const update = {
+        $push: { history: newHistory._id },
+      };
+
+      if (res.status === "win") update.$inc = { win: 1, chips: chipsChange };
+      if (res.status === "lose") update.$inc = { lose: 1, chips: chipsChange };
+      if (res.status === "draw") update.$inc = { chips: chipsChange };
+
+      const updatedPlayer = await Player.findByIdAndUpdate(player._id, update, {
+        new: true,
+      }).populate({
+        path: "history",
+        options: { sort: { createdAt: -1 }, limit: 50 },
+      });
+
+      io.to(player._id).emit("player_update", updatedPlayer);
+    }
 
     io.to(roomId).emit("player_card_show", {
       showdownCards,
