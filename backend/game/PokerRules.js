@@ -146,10 +146,21 @@ export const scoreHand = (cards) => {
 export const rankResults = (results) => {
   results.sort((a, b) => b.score - a.score);
 
+  const allSame =
+    results.length > 0 && results.every((r) => r.score === results[0].score);
+
+  if (allSame) {
+    return results.map((res) => ({
+      ...res,
+      position: 1,
+      status: "draw",
+    }));
+  }
+
   let currentRank = 1;
   let lastScore = null;
-  const topScore = results[0]?.score ?? 0;
 
+  const topScore = results[0].score;
   const final = [];
 
   results.forEach((res, idx) => {
@@ -158,12 +169,10 @@ export const rankResults = (results) => {
       lastScore = res.score;
     }
 
-    const status = res.score === topScore ? "win" : "lose";
-
     final.push({
       ...res,
       position: currentRank,
-      status,
+      status: res.score === topScore ? "win" : "lose",
     });
   });
 

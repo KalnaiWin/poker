@@ -52,8 +52,7 @@ export const RoomDesign = ({ thisRoom }) => {
               <table className="min-w-[350px] text-sm text-gray-700 border-collapse">
                 <thead>
                   <tr className="bg-gray-100 text-gray-800 border-b">
-                    <th className="p-2 text-center font-semibold">Wins</th>
-                    <th className="p-2 text-center font-semibold">Played</th>
+                    <th className="p-2 text-center font-semibold">Winrate</th>
                     <th className="p-2 text-center font-semibold">Name</th>
                     <th className="p-2 text-center font-semibold">Action</th>
                   </tr>
@@ -61,15 +60,17 @@ export const RoomDesign = ({ thisRoom }) => {
 
                 <tbody>
                   {thisRoom.members.map((member, index) => {
-                    const totalMatch = member.win + member.lose;
+                    const totalMatch =
+                      (member.win / (member.win + member.lose)) * 100;
 
                     return (
                       <tr
                         key={index}
                         className="border-b hover:bg-gray-50 transition-colors"
                       >
-                        <td className="p-2 text-center">{member.win}</td>
-                        <td className="p-2 text-center">{totalMatch}</td>
+                        <td className="p-2 text-center">
+                          {totalMatch.toFixed(2)} %
+                        </td>
 
                         {/* Name + Avatar */}
                         <td className="p-2 flex items-center gap-2  relative">

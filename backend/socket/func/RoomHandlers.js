@@ -1,3 +1,4 @@
+import Player from "../../databases/models/Player.js";
 import { createTable, shuffleCards } from "../../game/PokerRules.js";
 
 export function RoomHandlers(io, socket, rooms, playerSocketMap) {
@@ -10,7 +11,10 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         round: 1,
         currentTurn: 0,
         currentCard: [],
+        
         bets: new Map(),
+        totalBets: new Map(), 
+
         playerActed: new Set(),
         flopStarted: false,
         turnStarted: false,
@@ -21,13 +25,15 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         currentBet: 0,
         playersSpectator: new Set(),
 
-        readyPlayers: new Set(),
-        timerRunning: false,
-        continueTimer: null,
+        // readyPlayers: new Set(),
+        // timerRunning: false,
+        // continueTimer: null,
       });
     }
 
     const room = rooms.get(roomId);
+
+    const player = await Player.findById(playerId);
 
     playerSocketMap[playerId] = socket.id;
 
@@ -43,7 +49,7 @@ export function RoomHandlers(io, socket, rooms, playerSocketMap) {
         name: playerName,
         socketId: playerSocketMap[playerId],
         hand: [],
-        chipsBet: [],
+        chipsBet: player.chips,
       });
 
     socket.join(roomId);
