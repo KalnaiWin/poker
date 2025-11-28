@@ -34,7 +34,7 @@ export const DashboardPage = () => {
   };
 
   return (
-    <div className="bg-black/80 w-full h-screen p-5">
+    <div className="bg-black/80 w-full p-5 min-h-screen">
       <div className="flex items-center justify-between mb-10">
         <div className="flex items-center gap-4">
           <div className="border-2 border-white p-1 w-fit rounded-md bg-white/30">
@@ -74,9 +74,10 @@ export const DashboardPage = () => {
       </div>
       <div>
         {history && history.length > 0 ? (
-          <div>
-            {history.map((match, index) => {
+          <div className="flex flex-col gap-5">
+            {history.map((match) => {
               const isToggled = toggleHistory === match._id;
+              const chipsGet = match.chipsChange <= 0 ? "" : "+";
               return (
                 <div key={match._id}>
                   <div className="border border-white py-3 px-3 flex justify-around items-center">
@@ -85,16 +86,32 @@ export const DashboardPage = () => {
                         className={`${
                           match.result === "win"
                             ? "text-yellow-400"
-                            : "text-red-500"
+                            : match.result === "lose"
+                            ? "text-red-500"
+                            : "text-gray-500"
                         } text-2xl uppercase italic font-bold`}
                       >
                         {match?.result || 0}
                       </p>
                       <p className="text-white">{match.room.name}</p>
                     </div>
-                    <div className="flex gap-2 text-blue-400 text-2xl items-center ">
-                      <User2 className="font-extrabold" />
-                      {match.opponents.length + 1}
+                    <div className="flex justify-center items-center flex-col">
+                      <div className="flex gap-2 text-blue-400 text-2xl items-center">
+                        <User2 className="font-extrabold" />
+                        {match.opponents.length + 1}
+                      </div>
+                      <p
+                        className={`${
+                          chipsGet === "+"
+                            ? "text-green-500"
+                            : match.chipsChange < 0
+                            ? "text-red-500"
+                            : "text-white"
+                        } text-md font-black`}
+                      >
+                        {chipsGet}
+                        {match.chipsChange}
+                      </p>
                     </div>
                     <div className="flex gap-2">
                       {match.card.map((cd, idx) => (

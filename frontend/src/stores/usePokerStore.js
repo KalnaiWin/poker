@@ -189,16 +189,21 @@ export const usePokerStore = create((set, get) => ({
       });
     });
 
-    socket.off("all_cards_sync");
-    socket.on("all_cards_sync", ({ cards }) => {
-      set({ cards });
-      socket.emit("round_effect_start", { roomId, round });
-    });
+    // socket.off("all_cards_sync");
+    // socket.on("all_cards_sync", ({ cards }) => {
+    //   set({ cards });
+    //   console.log("Cards: ", cards);
+    // });
 
     socket.off("update_state");
-    socket.on("update_state", ({ currentBet, turnPlayerId, players }) => {
+    socket.on("update_state", ({ currentBet, pot, turnPlayerId, players }) => {
+      console.log("Update state");
+      console.log("currentBet: ", currentBet);
+      console.log("turnPlayerId: ", turnPlayerId);
+      console.log("players: ", players);
       set({
         currentBet,
+        pot,
         turnPlayerId,
         players,
       });

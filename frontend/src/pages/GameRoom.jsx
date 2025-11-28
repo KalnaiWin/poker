@@ -1,6 +1,6 @@
 import { useAuthStore } from "../stores/useAuthStore";
 import { useRoomStore } from "../stores/useRoomStore";
-import { DollarSign, LogOut, Triangle } from "lucide-react";
+import { DollarSign, Gift, LogOut, Triangle } from "lucide-react";
 import { useNavigate } from "react-router";
 import { usePokerStore } from "../stores/usePokerStore";
 import { ButtonAction } from "../components/ButtonAction";
@@ -12,13 +12,13 @@ export const GameRoom = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
   const { leaveRoom, getAllRoom } = useRoomStore();
   const {
-    isStart,
     currentCardonTable,
     playersCard,
     result,
     finish,
     initSocketListeners,
     effect,
+    pot,
   } = usePokerStore();
   const navigate = useNavigate();
 
@@ -149,12 +149,15 @@ export const GameRoom = ({ thisRoom }) => {
             <ButtonAction thisRoom={thisRoom} />
           </div>
           <div className="absolute top-10 flex justify-center w-full">
-            <p className="text-gray-400 italic">
-              {isStart ? "Start" : "Loading room..."}
-            </p>
+            <div className="flex items-center gap-5">
+              <div className="flex gap-2 items-centers text-yellow-600">
+                Pot <Gift className="text-2xl" />
+              </div>
+              <p className="font-black text-xl">{pot}</p>
+            </div>
           </div>
           <div className="absolute bottom-10 flex gap-5 px-10">
-            {thisRoom.members.map((player, index) => {
+            {thisRoom.members.map((player) => {
               return (
                 <div
                   className="flex flex-col items-center justify-center"

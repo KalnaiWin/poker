@@ -26,7 +26,7 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     });
   });
 
-  socket.on("bet_chip", ({ chipBet, roomId, playerId, action }) => {
+  socket.on("bet_chip", async ({ chipBet, roomId, playerId, action }) => {
     const room = rooms.get(roomId);
     if (!room) return;
     room.playerActed.add(playerId);
@@ -34,16 +34,21 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     room.playersInRound =
       room.playersInRound || new Set(room.members.map((m) => m._id));
     room.bets = room.bets || new Map();
+    room.totalBets = room.totalBets || new Map();
+    console.log("Room bets in bet chips", room.totalBets);
     room.pot = room.pot || 0;
     room.currentBet = room.currentBet || 0;
 
     const myBet = room.bets.get(playerId) || 0;
+    const myTotalBet = room.totalBets.get(playerId) || 0;
     const currentBet = room.currentBet;
 
     const playerIndex = room.members.findIndex((p) => p._id === playerId);
     if (playerIndex === -1) return;
 
     const player = room.members[playerIndex];
+
+    const AccountPlayer = await Player.findById(playerId);
 
     if (!room.playersInRound.has(playerId)) {
       return;
@@ -55,7 +60,7 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       room.playerActed.delete(playerId);
       if (room.playersInRound.size === 1) {
         const winnerPlayer = room.members.find(
-          (player) => playerId === player._id
+          (player) => playerId !== player._id
         );
         const winnerPlayerName = winnerPlayer.name;
         const result = [winnerPlayerName];
@@ -74,8 +79,15 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       }
+      // console.log("Player checked: ", room.bets);
+      AccountPlayer.chips -= room.currentBet;
+      await AccountPlayer.save();
+      room.pot += room.currentBet;
+      room.bets.set(playerId, room.currentBet);
+      // console.log("Player called: ", room.bets);
     } else if (action === "call") {
       const toCall = currentBet - myBet;
+      // console.log(toCall);
       if (toCall <= 0) {
         io.to(roomId).emit("invalid_action", {
           playerId,
@@ -83,13 +95,14 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       } else {
-        const callAmount = Math.min(toCall, player.chips);
+        const callAmount = Math.min(toCall, player.chipsBet);
+        AccountPlayer.chips -= callAmount;
+        await AccountPlayer.save();
         player.chips -= callAmount;
         room.pot += callAmount;
         room.bets.set(playerId, myBet + callAmount);
-
-        if (player.chips === 0) {
-        }
+        room.totalBets.set(playerId, myBet + callAmount);
+        // console.log("Player called: ", room.bets);
       }
     } else if (action === "bet") {
       const betSize = Number(chipBet);
@@ -100,7 +113,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       }
-
       if (betSize <= 0) {
         io.to(roomId).emit("invalid_action", {
           playerId,
@@ -108,17 +120,24 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       }
-      if (betSize > player.chips) {
+      if (betSize > player.chipsBet) {
         io.to(roomId).emit("invalid_action", {
           playerId,
           reason: "Bet exceeds your chips",
         });
         return;
       }
-      player.chips -= betSize;
+      // console.log("Player chips before: ", player.chipsBet);
+      // AccountPlayer.chips -= betSize;
+      // await AccountPlayer.save();
       room.pot += betSize;
       room.bets.set(playerId, betSize);
+      room.totalBets.set(playerId, myTotalBet + betSize);
       room.currentBet = betSize;
+      player.chipsBet = AccountPlayer.chips;
+      // console.log("Account: ", AccountPlayer);
+      // console.log("Player chips after: ", player.chipsBet);
+      // console.log("Current bet after: ", room.currentBet);
       room.playerActed.clear();
     } else if (action === "raise") {
       const raiseTo = Number(chipBet);
@@ -129,7 +148,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       }
-
       if (raiseTo <= currentBet) {
         io.to(roomId).emit("invalid_action", {
           playerId,
@@ -137,10 +155,8 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         });
         return;
       }
-
       const required = raiseTo - myBet;
-
-      if (required > player.chips) {
+      if (required > player.chipsBet) {
         io.to(roomId).emit("invalid_action", {
           playerId,
           reason: "Not enough chips to raise",
@@ -148,10 +164,14 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         return;
       }
 
-      player.chips -= required;
+      // player.chipsBet -= required;
       room.pot += required;
       room.bets.set(playerId, raiseTo);
+      room.totalBets.set(playerId, myTotalBet + required);
       room.currentBet = raiseTo;
+
+      // AccountPlayer.chips -= required;
+      // await AccountPlayer.save();
 
       room.playerActed.clear();
     } else {
@@ -212,12 +232,14 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     }
     io.to(roomId).emit("update_state", {
       currentBet: room.currentBet,
+      pot: room.pot,
       turnPlayerId: nextPlayer._id,
       players: room.members.map((p) => ({
         _id: p._id,
         name: p.name,
         chips: p.chips,
         betThisRound: room.bets.get(p._id) || 0,
+        totalBet: room.totalBets.get(p._id) || 0,
         isInRound: room.playersInRound.has(p._id),
       })),
     });
@@ -231,6 +253,8 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     room.currentBet = 0;
     room.pot = room.pot || 0;
     room.bets = room.bets || new Map();
+    room.totalBets = room.totalBets || new Map();
+    console.log("Room bets in init_round", room.totalBets);
     room.playerActed = new Set();
     room.playersInRound = new Set(room.members.map((m) => m._id));
 
@@ -312,13 +336,42 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
 
     const result = ResultTable(room.currentCard, showdownCards);
 
+    const winners = result.filter((r) => r.status === "win");
+    const pot = room.pot || 0;
+
+    const winningsPerWinner = winners.length > 0 ? pot / winners.length : 0;
+
+    console.log("Bets: ", room.totalBets);
+
+    result.forEach((r) => {
+      const playerTotalBet = room.totalBets.get(r.player._id) || 0;
+
+      if (r.status === "win") {
+        r.chips = winningsPerWinner - playerTotalBet;
+      } else if (r.status === "lose") {
+        r.chips = -playerTotalBet;
+      } else {
+        r.chips = 0;
+      }
+    });
+
     for (const player of room.members) {
       const opponents = room.members
         .filter((p) => p._id !== player._id)
         .map((p) => p._id);
 
       const res = result.find((r) => r.player._id === player._id);
-      const chipsChange = res?.chips || 0;
+      const playerTotalBet = room.totalBets.get(player._id) || 0;
+
+      let changeChips = 0;
+
+      if (res.status === "win") {
+        changeChips = pot;
+      } else if (res.status === "lose") {
+        changeChips = -playerTotalBet;
+      } else if (res.status === "draw") {
+        changeChips = winningsPerWinner - playerTotalBet;
+      }
 
       const playerHands = room.members.map((player) => {
         const playerResult = result.find((r) => r.player._id === player._id);
@@ -333,20 +386,22 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
         playerId: player._id,
         opponents,
         result: res.status,
-        chipsChange,
+        chipsChange: changeChips,
         duration: room.duration,
         room: { id: roomId, name: roomPlayed.name },
         card: room.currentCard,
         playerHands: playerHands,
       });
 
+      // console.log("New History: ", newHistory);
+
       const update = {
         $push: { history: newHistory._id },
       };
 
-      if (res.status === "win") update.$inc = { win: 1, chips: chipsChange };
-      if (res.status === "lose") update.$inc = { lose: 1, chips: chipsChange };
-      if (res.status === "draw") update.$inc = { chips: chipsChange };
+      if (res.status === "win") update.$inc = { win: 1, chips: changeChips };
+      if (res.status === "lose") update.$inc = { lose: 1, chips: changeChips };
+      if (res.status === "draw") update.$inc = { chips: changeChips };
 
       const updatedPlayer = await Player.findByIdAndUpdate(player._id, update, {
         new: true,
