@@ -35,7 +35,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
       room.playersInRound || new Set(room.members.map((m) => m._id));
     room.bets = room.bets || new Map();
     room.totalBets = room.totalBets || new Map();
-    console.log("Room bets in bet chips", room.totalBets);
     room.pot = room.pot || 0;
     room.currentBet = room.currentBet || 0;
 
@@ -254,7 +253,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     room.pot = room.pot || 0;
     room.bets = room.bets || new Map();
     room.totalBets = room.totalBets || new Map();
-    console.log("Room bets in init_round", room.totalBets);
     room.playerActed = new Set();
     room.playersInRound = new Set(room.members.map((m) => m._id));
 
@@ -340,8 +338,6 @@ export function PokerHandlers(io, socket, rooms, playerSocketMap) {
     const pot = room.pot || 0;
 
     const winningsPerWinner = winners.length > 0 ? pot / winners.length : 0;
-
-    console.log("Bets: ", room.totalBets);
 
     result.forEach((r) => {
       const playerTotalBet = room.totalBets.get(r.player._id) || 0;

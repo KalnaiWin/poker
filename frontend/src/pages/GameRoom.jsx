@@ -6,7 +6,7 @@ import { usePokerStore } from "../stores/usePokerStore";
 import { ButtonAction } from "../components/ButtonAction";
 import { BestHandColor, RankPositionColor } from "../databases/utils";
 import { useEffect } from "react";
-import { MainEffect } from "../components/effect/pokerEffect";
+import { MainEffect } from "../components/effect/PokerEffect";
 
 export const GameRoom = ({ thisRoom }) => {
   const { authPlayer } = useAuthStore();
