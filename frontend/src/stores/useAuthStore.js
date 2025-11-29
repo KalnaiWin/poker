@@ -4,7 +4,9 @@ import toast from "react-hot-toast";
 import { io } from "socket.io-client";
 
 const BASE_URL =
-  import.meta.env.MODE === "development" ? "http://localhost:8000" : "/";
+  import.meta.env.MODE === "development"
+    ? "http://localhost:8000"
+    : "https://poker-game.up.railway.app";
 
 export const useAuthStore = create((set, get) => ({
   authPlayer: null,
