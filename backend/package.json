@@ -12,8 +12,6 @@
   "license": "ISC",
   "description": "",
   "devDependencies": {
-    "@arcjet/inspect": "^1.0.0-beta.13",
-    "@arcjet/node": "^1.0.0-beta.13",
     "nodemon": "^3.1.10"
   },
   "dependencies": {
@@ -25,6 +23,8 @@
     "dotenv": "^17.2.3",
     "express": "^5.1.0",
     "jsonwebtoken": "^9.0.2",
-    "mongoose": "^8.19.2"
+    "mongoose": "^8.19.2",
+    "@arcjet/inspect": "^1.0.0-beta.13",
+    "@arcjet/node": "^1.0.0-beta.13"
   }
 }
