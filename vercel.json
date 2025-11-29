@@ -11,5 +11,6 @@
       "src": "/api/(.*)",
       "dest": "backend/index.js"
     }
-  ]
+  ],
+  "ignoreCommand": "echo Skip build"
 }
