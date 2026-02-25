@@ -60,7 +60,7 @@ Video Demo: https://www.facebook.com/reel/889751763401124
 
 ### 1. Clone the repository
 
-git clone https://github.com/yourusername/project-name.git
+git clone https://github.com/KalnaiWin/poker.git
 
 ### 2. Install dependencies
 
