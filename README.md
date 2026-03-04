@@ -7,7 +7,7 @@ Players can create public or private rooms, join matches, play poker in real-tim
 
 
 ## 🌍 Live Demo
-Frontend: https://poker-frontend-znxb.onrender.com  
+Deploy: https://poker-frontend-znxb.onrender.com  
 Video Demo: https://www.facebook.com/reel/889751763401124
 
 ## 🧠 Challenges & What I Learned
