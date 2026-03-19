@@ -106,7 +106,7 @@ npm run dev
 
 ### 🎮 Join Room → Play with Other Players
 
-<img width="3840" height="1939" alt="image" src="https://github.com/user-attachments/assets/8de92355-3384-4949-984d-804ef89ce2fa" />
+<img width="3840" height="1926" alt="image" src="https://github.com/user-attachments/assets/3a715065-17cb-4521-997c-4e017996300d" />
 
 
 ### 💬 In-Room Chat System
